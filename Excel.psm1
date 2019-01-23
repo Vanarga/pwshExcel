@@ -385,7 +385,15 @@ function Get-WorksheetData {
                 {
                     for ($j = 1; $j -le $lastColumn; $j++)
                     {
-                        $hashtable[$header[1,$j]] = $data[$i,$j]
+                        If ($lastColumn -ne 1) {
+                            $hashtable[$header[1,$j]] = $data[$i,$j]
+                        }
+                        elseif ($lastRow -gt 2) {
+                            $hashtable[$header] = $data[$i,$j]
+                        }
+                        else {
+                            $hashtable[$header] = $data
+                        }
                     }
                     If ($HashtableReturn) {
                         $returnArray += $hashtable
