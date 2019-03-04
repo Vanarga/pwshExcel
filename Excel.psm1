@@ -212,7 +212,8 @@ function Add-Worksheet {
         This advanced function creates a new worksheet.
 
     .DESCRIPTION
-        This function creates a new worksheet in the given workbook. If a Sheetname is specified it renames the new worksheet to that name.
+        This function creates a new worksheet in the given workbook. If a Sheetname is specified it renames the  
+	new worksheet to that name.
 
     .PARAMETER ObjExcel
         The mandatory parameter ObjExcel is the Excel COM Object passed to the function.
@@ -311,7 +312,8 @@ function Save-Workbook {
         This advanced function saves the Microsoft Excel Workbook.
 
     .DESCRIPTION
-        This advanced function saves the Microsoft Excel Workbook. If a Path is specified it does a SaveAs, otherwise it just saves the data.
+        This advanced function saves the Microsoft Excel Workbook. If a Path is specified it does a SaveAs, otherwise
+	it just saves the data.
 
     .PARAMETER Path
         The mandatory parameter Path is the location string of the Excel file.
@@ -425,10 +427,12 @@ function Get-WorksheetData {
         The parameter Worksheet is the Excel worksheet com object passed to the function.
 
     .PARAMETER HashtableReturn
-        The switch parameter HashtableReturn with default value False, causes the function to return an array of hashtables instead of an array of objects.
+        The switch parameter HashtableReturn with default value False, causes the function to return an array of 
+	hashtables instead of an array of objects.
 
     .EXAMPLE
-        The example below returns an array of custom objects using the first row as object parameter names and each additional row as object data.
+        The example below returns an array of custom objects using the first row as object parameter names and each 
+	additional row as object data.
         PS C:\> Get-WorksheetData $Worksheet
 
     .NOTES
@@ -496,8 +500,9 @@ function Set-WorksheetData {
         This advanced function populates a Microsoft Excel Worksheet with data from an Array of custom objects or hashtables.
 
     .DESCRIPTION
-        This advanced function populates a Microsoft Excel Worksheet with data from an Array of custom objects. The object members populates the first row of the sheet as header items.
-        The object values are placed beneath the headers on each successive row.
+        This advanced function populates a Microsoft Excel Worksheet with data from an Array of custom objects. The object 
+	members populates the first row of the sheet as header items. The object values are placed beneath the headers on 
+	each successive row.
 
     .PARAMETER Worksheet
         The parameter Worksheet is the Excel worksheet com object passed to the function.
@@ -506,10 +511,12 @@ function Set-WorksheetData {
         The parameter ImputArray is an Array of custom objects.
 
     .PARAMETER HashtableReturn
-        The switch parameter HashtableReturn with default value False, causes the function to return an array of hashtables instead of an array of objects.
+        The switch parameter HashtableReturn with default value False, causes the function to return an array of hashtables 
+	instead of an array of objects.
 
     .EXAMPLE
-        The example below returns an array of custom objects using the first row as object parameter names and each additional row as object data.
+        The example below returns an array of custom objects using the first row as object parameter names and each additional 
+	row as object data.
         PS C:\> Set-WorksheetData $Worksheet
 
     .NOTES
