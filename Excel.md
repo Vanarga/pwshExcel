@@ -26,13 +26,13 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 ## Function Help ##
 1. Open-Excel - Creates a new excel COM object.
 
-**.DESCRIPTION**
+**.DESCRIPTION**  
     The function opens an instance of Microsoft Excel but keeps it hidden unless the Visible parameter is used.
 
-**.PARAMETER** Visible
+**.PARAMETER** Visible  
     The parameter switch Visible when specified will make Excel visible on the desktop.
 
-**.EXAMPLE**
+**.EXAMPLE**  
     The example below returns the Excel COM object when used.
     PS C:\> $myObjExcel = Open-Excel
 
