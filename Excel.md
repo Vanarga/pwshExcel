@@ -54,8 +54,9 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below closes the excel instance defined by the COM Objects from the parameter section.  
+```
         PS C:\> Close-Excel -ObjExcel $myObjExcel -Workbook $wb  
-
+```
 3. Get-Workbook
 
     **.DESCRIPTION**  
@@ -69,8 +70,9 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below returns the workbook COM object specified by Path.  
+```
         PS C:\> $wb = Get-Workbook -ObjExcel $myExcelObj -Path "C:\Excel.xlsx"  
-
+```
 4. Get-Worksheet
 
     **.DESCRIPTION**  
@@ -84,8 +86,9 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below returns the named "Sheet1" worksheet COM Object.  
+```
         PS C:\> $ws = Get-Worksheet -Workbook $wb -SheetName "Sheet1"  
-
+```
 5. Add-Worksheet
 
     **.DESCRIPTION**  
@@ -102,8 +105,9 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below creates a new worksheet named Data.  
+```
         PS C:\> Add-Worksheet -ObjExcel $myObjExcel -Workbook $wb -Sheetname "Data"  
-
+```
 6. Add-Workbook
 
     **.DESCRIPTION**  
@@ -117,8 +121,9 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below returns the newly created Excel workbook COM Object.  
+```        
         PS C:\> Add-Workbook -ObjExcel $myExcelObj -Path "C:\Excel.xlsx"  
-
+```
 7. Save-Workbook
 
     **.DESCRIPTION**  
@@ -132,8 +137,9 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below Saves the workbook as C:\Excel.xlsx.  
+```        
         PS C:\> Save-Workbook -Workbook $wb -Path "C:\Excel.xlsx"  
-
+```
 8. Get-WorksheetUsedRange
 
     **.DESCRIPTION**  
@@ -144,8 +150,9 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below returns a hashtable containing the last used column and row of the referenced worksheet.  
+```        
         PS C:\> Get-WorksheetUsedRange $Worksheet  
-
+```
 9. Get-WorksheetData
 
     **.DESCRIPTION**  
@@ -160,8 +167,9 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below returns an array of custom objects using the first row as object parameter names and each additional row as object data.  
+```        
         PS C:\> Get-WorksheetData $Worksheet  
-
+```
 10. Set-WorksheetData
 
     **.DESCRIPTION**  
@@ -179,8 +187,9 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below returns an array of custom objects using the first row as object parameter names and each additional row as object data.  
+```        
         PS C:\> Set-WorksheetData $Worksheet  
-
+```
 11. Set-WorksheetName
 
     **.DESCRIPTION**  
@@ -191,8 +200,9 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below renames the worksheet to Data unless that name is already in use.  
+```        
         PS C:\> Set-WorksheetName -Worksheet $ws -SheetName "Data"  
-
+```
 12. Get-WorksheetNames
 
     **.DESCRIPTION**  
@@ -203,8 +213,9 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below renames the worksheet to Data unless that name is already in use.  
+```        
         PS C:\> Get-WorksheetNames -Workbook $wb  
-
+```
 13. ConvertPSObjectToHashtable
 
     **.DESCRIPTION**  
@@ -215,8 +226,9 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below returns a hashtable created from the myPSObject PSObject.  
+```        
         PS C:\> $myNewHash = ConvertPSObjectToHashtable $myPSObject  
-
+```
 14. Export-Yaml
 
     **.DESCRIPTION**  
@@ -230,12 +242,13 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below returns a hashtable created from the myPSObject PSObject.  
+```        
         PS C:\> Export-Yaml -InputObject $myHastable -FilePath "C:\myYamlFile.yml"  
 
         or  
 
         PS C:\> Export-Yaml -InputObject $myPSObject -FilePath "C:\myYamlFile.yml"  
-
+```
 15. Export-Json
 
     **.DESCRIPTION**  
@@ -249,12 +262,13 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below returns a hashtable created from the myPSObject PSObject.  
+```        
         PS C:\> Export-Json -InputObject $myHastable -FilePath "C:\myJsonFile.json"  
 
         or  
 
         PS C:\> Export-Json -InputObject $myPSObject -FilePath "C:\myJsonFile.json"  
-
+```
 16. Import-Jason
 
     **.DESCRIPTION**  
@@ -265,8 +279,9 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below returns a pscustomobject created from the contents of C:\myJasonFile.json.  
+```        
         PS C:\> Export-Json -FilePath "C:\myJsonFile.json"  
-
+```
 17. Import-Yaml
 
     **.DESCRIPTION**  
@@ -277,4 +292,6 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
     **.EXAMPLE**  
         The example below returns a pscustomobject created from the contents of C:\myYamlFile.yml.  
+```        
         PS C:\> Export-Json -FilePath "C:\myYamlFile.yml"  
+```       
