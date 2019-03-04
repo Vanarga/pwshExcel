@@ -34,13 +34,13 @@ This repo contains the Excel PowerShell module for manipulating Microsoft Excel 
 
 **.EXAMPLE**  
     The example below returns the Excel COM object when used.  
-    ```
+```
     PS C:\> $myObjExcel = Open-Excel  
 
     or  
 
     PS C:\> $myObjExcel = Open-Excel -Visible  
-    ```
+```
 2. Close-Excel - Close Excel and release COM objects.
 
     **.DESCRIPTION**  
