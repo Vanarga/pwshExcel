@@ -20,7 +20,7 @@ function Open-Excel {
 .NOTES
     Author: Michael van Blijdesteijn
     Last Edit: 2019-01-19
-    Version 1.0 - initial release of Open-Excel
+    Version 1.0 - Open-Excel
 
 #>
 	[cmdletbinding()]
@@ -28,7 +28,15 @@ function Open-Excel {
             [Parameter(Mandatory = $false,
                 ValueFromPipeline = $true,
                 ValueFromPipelineByPropertyName = $true)]
-                [Switch]$Visible = $false
+                [Switch]$Visible = $false,
+            [Parameter(Mandatory = $false,
+                ValueFromPipeline = $true,
+                ValueFromPipelineByPropertyName = $true)]
+                [Switch]$DisplayAlerts = $false,
+            [Parameter(Mandatory = $false,
+                ValueFromPipeline = $true,
+                ValueFromPipelineByPropertyName = $true)]
+                [Switch]$AskToUpdateLinks = $false
         )
 		Begin {
             # Create an Object Excel.Application using Com interface
@@ -37,6 +45,8 @@ function Open-Excel {
 		Process {
             # Disable the 'visible' property so the Document won't open in excel
             $objExcel.Visible = $Visible
+            $objExcel.DisplayAlerts = $DisplayAlerts
+            $objExcel.AskToUpdateLinks = $AskToUpdateLinks
 		}
 		End {
 			Return $objExcel
@@ -64,7 +74,7 @@ function Close-Excel {
     .NOTES
         Author: Michael van Blijdesteijn
         Last Edit: 2019-01-19
-        Version 1.0 - initial release of Close-Excel
+        Version 1.0 - Close-Excel
 
     #>
     [cmdletbinding()]
@@ -73,20 +83,28 @@ function Close-Excel {
                 ValueFromPipeline = $true,
                 ValueFromPipelineByPropertyName = $true)]
                 [ValidateScript({$_.GetType().FullName -eq "Microsoft.Office.Interop.Excel.ApplicationClass"})]
-                $ObjExcel,
-            [Parameter(Mandatory = $true,
-                ValueFromPipeline = $true,
-                ValueFromPipelineByPropertyName = $true)]
-                [ValidateScript({$_.GetType().IsCOMObject})]
-            $Workbook)
-        Begin {$Worksheet = $Workbook.Sheets.Item($Workbook.ActiveSheet.Name)}
+                $ObjExcel)
+        Begin {
+            $workbooks = @()
+            $worksheets = @()
+        }
         Process {
-            $Workbook.Close($false)
+            ForEach ($workbook in $ObjExcel.Workbooks) {
+                $workbooks += $workbook
+                $worksheets += $workbook.Sheets.Item($workbook.ActiveSheet.Name)
+                $workbook.Close($false)
+            }
             $ObjExcel.Quit()
         }
         End {
-            [void][System.Runtime.Interopservices.Marshal]::FinalReleaseComObject($Worksheet)
-            [void][System.Runtime.Interopservices.Marshal]::FinalReleaseComObject($Workbook)
+
+            Foreach ($w in $worksheets) {
+                [void][System.Runtime.Interopservices.Marshal]::FinalReleaseComObject($w)
+            }
+            Foreach ($w in $workbooks) {
+                [void][System.Runtime.Interopservices.Marshal]::FinalReleaseComObject($w)
+            }
+
             [void][System.Runtime.Interopservices.Marshal]::FinalReleaseComObject($ObjExcel)
             [System.GC]::Collect()
             [System.GC]::WaitForPendingFinalizers()
@@ -114,7 +132,7 @@ function Get-Workbook {
     .NOTES
         Author: Michael van Blijdesteijn
         Last Edit: 2019-01-19
-        Version 1.0 - initial release of Get-Workbook
+        Version 1.0 - Get-Workbook
 
     #>
     [cmdletbinding()]
@@ -163,7 +181,7 @@ function Get-Worksheet {
     .NOTES
         Author: Michael van Blijdesteijn
         Last Edit: 2019-01-19
-        Version 1.0 - initial release of Get-Worksheet
+        Version 1.0 - Get-Worksheet
     #>
     [cmdletbinding()]
         Param (
@@ -175,9 +193,11 @@ function Get-Worksheet {
             [Parameter(Mandatory = $true,
                 ValueFromPipeline = $true,
                 ValueFromPipelineByPropertyName = $true)]
-                [ValidateScript({($Workbook.Worksheets | Select Name).Name -Contains $_})]
+                [ValidateScript({($Workbook.Worksheets | Select-Object Name).Name -Contains $_})]
                 [string]$SheetName)
-        Begin {}
+        Begin {
+            $Workbook.Activate()
+        }
         Process {
             $worksheet = $Workbook.Sheets.Item($SheetName)
         }
@@ -210,7 +230,7 @@ function Add-Worksheet {
     .NOTES
         Author: Michael van Blijdesteijn
         Last Edit: 2019-01-19
-        Version 1.0 - initial release of Add-Worksheet
+        Version 1.0 - Add-Worksheet
     #>
     [cmdletbinding()]
         Param (
@@ -227,10 +247,12 @@ function Add-Worksheet {
             [Parameter(Mandatory = $false,
                 ValueFromPipeline = $true,
                 ValueFromPipelineByPropertyName = $true)]
-                [ValidateScript({($Workbook.Worksheets | Select Name).Name -Contains $_})]
+                [ValidateScript({(Get-WorksheetNames -Workbook $Workbook) -NotContains $_})]
                 [string]$SheetName)
         Begin {
+            # http://www.planetcobalt.net/sdb/vba2psh.shtml
             $def = [Type]::Missing
+            $Workbook.Activate()
         }
         Process {
             $worksheet = $ObjExcel.Worksheets.Add($def,$def,1,$def)
@@ -239,7 +261,7 @@ function Add-Worksheet {
             }
         }
         End {
-            Return $worksheet
+            Return $workbook
         }
 }
 
@@ -264,7 +286,7 @@ function Add-Workbook {
     .NOTES
         Author: Michael van Blijdesteijn
         Last Edit: 2019-01-19
-        Version 1.0 - initial release of Add-Workbook
+        Version 1.0 - Add-Workbook
 
     #>
         [cmdletbinding()]
@@ -304,7 +326,7 @@ function Save-Workbook {
     .NOTES
         Author: Michael van Blijdesteijn
         Last Edit: 2019-01-19
-        Version 1.0 - initial release of Save-Workbook
+        Version 1.0 - Save-Workbook
 
     #>
         [cmdletbinding()]
@@ -319,13 +341,17 @@ function Save-Workbook {
                     ValueFromPipelineByPropertyName = $true)]
                     [String]$Path)
             Begin {
+                Add-Type -AssemblyName Microsoft.Office.Interop.Excel
+                $xlFixedFormat = [Microsoft.Office.Interop.Excel.XlFileFormat]::xlOpenXMLWorkbook
+
                 If (-not [System.IO.Path]::IsPathRooted($Path)) {
                     $Path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+                    $Workbook.Activate()
                 }
             }
             Process {
                 If ($Path) {
-                    $workbook.SaveAs($Path)
+                    $workbook.SaveAs($Path,$xlFixedFormat)
                 }
                 else {
                     $Workbook.Save()
@@ -333,6 +359,58 @@ function Save-Workbook {
             }
             End {}
 }
+
+function Get-WorksheetUsedRange {
+    <#
+    .SYNOPSIS
+        This advanced function returns the Column and Row of the used range in a Worksheet.
+
+    .DESCRIPTION
+        This advanced function returns a hashtable containing the last used column and last used row of a worksheet..
+
+    .PARAMETER Worksheet
+        The parameter Worksheet is the Excel worksheet com object passed to the function.
+
+    .EXAMPLE
+        The example below returns a hashtable containing the last used column and row of the referenced worksheet.
+        PS C:\> Get-WorksheetUsedRange $Worksheet
+
+    .NOTES
+        Author: Michael van Blijdesteijn
+        Last Edit: 2019-02-26
+        Version 1.0 - Get-WorksheetData
+
+    #>
+    [cmdletbinding()]
+        Param (
+            [Parameter(Mandatory = $true,
+                ValueFromPipeline = $true,
+                ValueFromPipelineByPropertyName = $true)]
+                [ValidateScript({$_.GetType().IsCOMObject})]
+                $worksheet)
+        Begin {
+            $What = "*"
+            $After = $worksheet.Range("A1")
+            $LookIn = [Microsoft.Office.Interop.Excel.XlFindLookIn]::xlValues
+            $LookAt = [Microsoft.Office.Interop.Excel.xllookat]::xlPart
+            $XlSearchDirection = [Microsoft.Office.Interop.Excel.XlSearchDirection]::xlPrevious
+            $MatchCase = $False
+            $MatchByte = $False
+            $SearchFormat = [Type]::Missing
+            $hashtable = [ordered]@{}
+        }
+        Process {
+            $SearchOrder = [Microsoft.Office.Interop.Excel.XlSearchOrder]::xlByColumns
+            $hastable["Column"] = $worksheet.Cells.Find($What, $After, $LookIn, $LookAt, $SearchOrder, $XlSearchDirection, $MatchCase, $MatchByte, $SearchFormat).Column
+            $SearchOrder = [Microsoft.Office.Interop.Excel.XlSearchOrder]::xlByRows
+            $hashtable["Row"] = $worksheet.Cells.Find($What, $After, $LookIn, $LookAt, $SearchOrder, $XlSearchDirection, $MatchCase, $MatchByte, $SearchFormat).Row
+        }
+        End {
+            [System.Runtime.InteropServices.Marshal]::ReleaseComObject($After)
+            Return $hashtable
+        }
+}
+
 
 function Get-WorksheetData {
     <#
@@ -356,7 +434,7 @@ function Get-WorksheetData {
     .NOTES
         Author: Michael van Blijdesteijn
         Last Edit: 2019-01-19
-        Version 1.0 - initial release of Get-WorksheetData
+        Version 1.0 - Get-WorksheetData
 
     #>
     [cmdletbinding()]
@@ -371,10 +449,11 @@ function Get-WorksheetData {
                 ValueFromPipelineByPropertyName = $true)]
                 [Switch]$HashtableReturn = $false)
         Begin {
-            $lastColumn = $worksheet.UsedRange.SpecialCells(11).column
-            $lastRow	= $worksheet.UsedRange.SpecialCells(11).row
-            $lastColumnAddress		= $workSheet.Cells.Item(1,$lastColumn).address()
-            $lastColumnRowAddress	= $workSheet.Cells.Item($lastRow,$lastColumn).address()
+            $usedRange = Get-WorksheetUsedRange -worksheet $worksheet
+
+            # Addressing in $worksheet.cells.item(Row,Column)
+            $lastColumnAddress		= $workSheet.Cells.Item(1,$usedRange.Column).address()
+            $lastColumnRowAddress	= $workSheet.Cells.Item($usedRange.Row,$usedRange.Column).address()
             $header	= $workSheet.Range("A1",$lastColumnAddress).Value()
             $data	= $workSheet.Range("A2",$lastColumnRowAddress).Value()
             $hashtable = [ordered]@{}
@@ -395,12 +474,15 @@ function Get-WorksheetData {
                             $hashtable[$header] = $data
                         }
                     }
+                    # Add Worksheet NoteProperty Item to Hashtable.
+                    $hashtable["WorkSheet"] = $workSheet.Name
                     If ($HashtableReturn) {
                         $returnArray += $hashtable
                     }
                     else {
                         $returnArray += [pscustomobject]$hashtable
                     }
+                    $hashtable.clear()
                 }
         }
         End {
@@ -411,7 +493,7 @@ function Get-WorksheetData {
 function Set-WorksheetData {
     <#
     .SYNOPSIS
-        This advanced function populates a Microsoft Excel Worksheet with data from an Array of custom objects.
+        This advanced function populates a Microsoft Excel Worksheet with data from an Array of custom objects or hashtables.
 
     .DESCRIPTION
         This advanced function populates a Microsoft Excel Worksheet with data from an Array of custom objects. The object members populates the first row of the sheet as header items.
@@ -433,7 +515,7 @@ function Set-WorksheetData {
     .NOTES
         Author: Michael van Blijdesteijn
         Last Edit: 2019-01-19
-        Version 1.0 - initial release of Set-WorksheetData
+        Version 1.0 - Set-WorksheetData
 
     #>
     [cmdletbinding()]
@@ -448,8 +530,11 @@ function Set-WorksheetData {
                 ValueFromPipelineByPropertyName = $true)]
                 $InputArray)
         Begin {
-	        $myStack = new-object system.collections.stack
-	        $headers = $InputArray[0].PSObject.Properties.Name
+            If ($InputArray[0] -is "Hashtable") {
+                $InputArray = $InputArray | ForEach-Object {[pscustomobject]$_}
+            }
+            $myStack = new-object system.collections.stack
+            $headers = $InputArray[0].PSObject.Properties.Name
 	        $values  = $InputArray | ForEach-Object {$_.psobject.properties.value}
         }
         Process {
@@ -494,7 +579,7 @@ function Set-WorksheetName {
     .NOTES
         Author: Michael van Blijdesteijn
         Last Edit: 2019-01-19
-        Version 1.0 - initial release of Set-WorksheetName
+        Version 1.0 - Set-WorksheetName
     #>
     [cmdletbinding()]
         Param (
@@ -506,7 +591,7 @@ function Set-WorksheetName {
             [Parameter(Mandatory = $true,
                 ValueFromPipeline = $true,
                 ValueFromPipelineByPropertyName = $true)]
-                [ValidateScript({($Workbook.Worksheets | Select Name).Name -NotContains $_})]
+                [ValidateScript({(Get-WorksheetNames -Workbook $Workbook) -NotContains $_})]
                 [string]$SheetName)
         Begin {}
         Process {
@@ -515,9 +600,267 @@ function Set-WorksheetName {
         End {}
 }
 
-Export-ModuleMember -Function 'Open-*'
-Export-ModuleMember -Function 'Close-*'
-Export-ModuleMember -Function 'Get-*'
+function Get-WorksheetNames {
+    <#
+    .SYNOPSIS
+        This Advance Function returns a list of all worksheets in a workbook.
+
+    .DESCRIPTION
+        This Advance Function returns an array of strings of all worksheets in a workbook.
+
+    .PARAMETER Workbook
+        The parameter Workbook is the Excel workbook com object passed to the function.
+
+    .EXAMPLE
+        The example below renames the worksheet to Data unless that name is already in use.
+        PS C:\> Get-WorksheetNames -Workbook $wb
+
+    .NOTES
+        Author: Michael van Blijdesteijn
+        Last Edit: 2019-01-23
+        Version 1.0 - Get-WorksheetNames
+    #>
+    [cmdletbinding()]
+        Param (
+            [Parameter(Mandatory = $true,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true)]
+            [ValidateScript({$_.GetType().IsCOMObject})]
+            $Workbook)
+        Begin {
+            $Workbook.Activate()
+        }
+        Process {
+            $names = ($Workbook.Worksheets | Select-Object Name).Name
+        }
+        End {
+            Return $names
+        }
+}
+
+function ConvertPSObjectToHashtable {
+    <#
+    .SYNOPSIS
+        This Advance Function returns a Hashtable converted from a PSObject.
+
+    .DESCRIPTION
+        This Advance Function returns a Hashtable converted from a PSObject and will return work with nested PSObjects.
+
+    .PARAMETER InputObject
+        The parameter InputObject is a PSObject.
+
+    .EXAMPLE
+        The example below returns a hashtable created from the myPSObject PSObject.
+        PS C:\> $myNewHash = ConvertPSObjectToHashtable $myPSObject
+
+    .NOTES
+        Author: Dave Wyatt - https://stackoverflow.com/questions/3740128/pscustomobject-to-hashtable
+    #>
+
+    param (
+        [Parameter(ValueFromPipeline)]
+        $InputObject)
+
+    process
+    {
+        if ($null -eq $InputObject) { return $null }
+
+        if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string])
+        {
+            $collection = @(
+                foreach ($object in $InputObject) { ConvertPSObjectToHashtable $object }
+            )
+
+            Write-Output -NoEnumerate $collection
+        }
+        elseif ($InputObject -is [psobject])
+        {
+            $hash = @{}
+
+            foreach ($property in $InputObject.PSObject.Properties)
+            {
+                $hash[$property.Name] = ConvertPSObjectToHashtable $property.Value
+            }
+
+            $hash
+        }
+        else
+        {
+            $InputObject
+        }
+    }
+}
+
+function Export-Yaml {
+    <#
+    .SYNOPSIS
+        This Advance Function Exports a Hashtable or PSObject to a Yaml file.
+
+    .DESCRIPTION
+        This Advanced Function Exports a Hashtable or PSObject to a Yaml file
+
+    .PARAMETER InputObject
+        The parameter InputObject is a Hashtable or PSObject.
+
+    .PARAMETER Path
+        The mandatory parameter Path is the location string of the Yaml file.
+
+    .EXAMPLE
+        The example below returns a hashtable created from the myPSObject PSObject.
+        PS C:\> Export-Yaml -InputObject $myHastable -FilePath "C:\myYamlFile.yml"
+
+        or
+
+        PS C:\> Export-Yaml -InputObject $myPSObject -FilePath "C:\myYamlFile.yml"
+
+    .NOTES
+        Author: Michael van Blijdesteijn
+        Last Edit: 2019-03-01
+        Version 1.0 - Export-Yaml
+    #>
+    param (
+		[Parameter(Mandatory=$true, Position=0)]
+		$InputObject,
+        [Parameter(Mandatory = $true,
+        ValueFromPipeline = $true,
+        ValueFromPipelineByPropertyName = $true)]
+        [String]$Path)
+    begin {
+        If (-not [System.IO.Path]::IsPathRooted($Path)) {
+            $Path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+            $Workbook.Activate()
+        }
+        if (-not (get-module -Name powershell-yaml)) {
+            import-module powershell-yaml}
+    }
+    process {
+        $InputObject | ConvertTo-Yaml | Set-Content -Path $Path -Force
+    }
+    end {}
+}
+
+function Export-Json {
+    <#
+    .SYNOPSIS
+        This Advance Function Exports a Hashtable or PSObject to a Json file.
+
+    .DESCRIPTION
+        This Advanced Function Exports a Hashtable or PSObject to a Json file
+
+    .PARAMETER InputObject
+        The parameter InputObject is a Hashtable or PSObject.
+
+    .PARAMETER Path
+        The mandatory parameter Path is the location string of the Json file.
+
+    .EXAMPLE
+        The example below returns a hashtable created from the myPSObject PSObject.
+        PS C:\> Export-Json -InputObject $myHastable -FilePath "C:\myJsonFile.json"
+
+        or
+
+        PS C:\> Export-Json -InputObject $myPSObject -FilePath "C:\myJsonFile.json"
+
+    .NOTES
+        Author: Michael van Blijdesteijn
+        Last Edit: 2019-03-01
+        Version 1.0 - Export-Json
+    #>
+    param (
+		[Parameter(Mandatory=$true, Position=0)]
+		$InputObject,
+        [Parameter(Mandatory = $true,
+        ValueFromPipeline = $true,
+        ValueFromPipelineByPropertyName = $true)]
+        [String]$Path)
+    begin {
+        If (-not [System.IO.Path]::IsPathRooted($Path)) {
+            $Path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+            $Workbook.Activate()
+        }
+    }
+    process {
+        $InputObject | ConvertTo-Json | Set-Content -Path $Path -Force
+    }
+    end {}
+}
+
+function Import-Json {
+    <#
+    .SYNOPSIS
+        This Advance Function imports a Json file and returns a PSCustomObject.
+
+    .DESCRIPTION
+        This Advance Function imports a Json file and returns a PSCustomObject.
+
+    .PARAMETER Path
+        The mandatory parameter Path is the location string of the Json file.
+
+    .EXAMPLE
+        The example below returns a pscustomobject created from the contents of C:\myJasonFile.json.
+        PS C:\> Export-Json -FilePath "C:\myJsonFile.json"
+
+    .NOTES
+        Author: Michael van Blijdesteijn
+        Last Edit: 2019-03-01
+        Version 1.0 - Import-Json
+    #>
+    param (
+        [Parameter(Mandatory = $true,
+        ValueFromPipeline = $true,
+        ValueFromPipelineByPropertyName = $true)]
+        [String]$Path)
+    begin {}
+    process {
+        $InputObject = Get-Content -Raw -Path $Path | ConvertFrom-Json
+    }
+    end {
+        Return $InputObject
+    }
+}
+
+function Import-Yaml {
+    <#
+    .SYNOPSIS
+        This Advance Function imports a Yaml file and returns a PSCustomObject.
+
+    .DESCRIPTION
+        This Advance Function imports a Yaml file and returns a PSCustomObject.
+
+    .PARAMETER Path
+        The mandatory parameter Path is the location string of the Yaml file.
+
+    .EXAMPLE
+        The example below returns a pscustomobject created from the contents of C:\myYamlFile.yml.
+        PS C:\> Export-Json -FilePath "C:\myYamlFile.yml"
+
+    .NOTES
+        Author: Michael van Blijdesteijn
+        Last Edit: 2019-03-01
+        Version 1.0 - Import-Yaml
+    #>
+    param (
+        [Parameter(Mandatory = $true,
+        ValueFromPipeline = $true,
+        ValueFromPipelineByPropertyName = $true)]
+        [String]$Path)
+    begin {
+        if (-not (get-module -Name powershell-yaml)) {
+            import-module powershell-yaml}
+    }
+    process {
+        $InputObject = [pscustomobject](Get-Content -Raw -Path $Path | ConvertFrom-Yaml | ConvertTo-Json | ConvertFrom-Json)
+    }
+    end {
+        Return $InputObject
+    }
+}
+
 Export-ModuleMember -Function 'Add-*'
+Export-ModuleMember -Function 'Close-*'
+Export-ModuleMember -Function 'Export-*'
+Export-ModuleMember -Function 'Get-*'
+Export-ModuleMember -Function 'Import-*'
+Export-ModuleMember -Function 'Open-*'
 Export-ModuleMember -Function 'Set-*'
 Export-ModuleMember -Function 'Save-*'
