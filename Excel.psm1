@@ -564,10 +564,10 @@ function Set-WorksheetData {
 function Set-WorksheetName {
     <#
     .SYNOPSIS
-        This Advance Function sets the name of the given worksheet.
+        This advanced function sets the name of the given worksheet.
 
     .DESCRIPTION
-        This Advance Function sets the name of the given worksheet.
+        This advanced function sets the name of the given worksheet.
 
     .PARAMETER Worksheet
         The parameter Worksheet is the Excel worksheet com object passed to the function.
@@ -603,10 +603,10 @@ function Set-WorksheetName {
 function Get-WorksheetNames {
     <#
     .SYNOPSIS
-        This Advance Function returns a list of all worksheets in a workbook.
+        This advanced function returns a list of all worksheets in a workbook.
 
     .DESCRIPTION
-        This Advance Function returns an array of strings of all worksheets in a workbook.
+        This advanced function returns an array of strings of all worksheets in a workbook.
 
     .PARAMETER Workbook
         The parameter Workbook is the Excel workbook com object passed to the function.
@@ -641,10 +641,10 @@ function Get-WorksheetNames {
 function ConvertPSObjectToHashtable {
     <#
     .SYNOPSIS
-        This Advance Function returns a Hashtable converted from a PSObject.
+        This advanced function returns a hashtable converted from a PSObject.
 
     .DESCRIPTION
-        This Advance Function returns a Hashtable converted from a PSObject and will return work with nested PSObjects.
+        This advanced function returns a hashtable converted from a PSObject and will return work with nested PSObjects.
 
     .PARAMETER InputObject
         The parameter InputObject is a PSObject.
@@ -694,13 +694,13 @@ function ConvertPSObjectToHashtable {
 function Export-Yaml {
     <#
     .SYNOPSIS
-        This Advance Function Exports a Hashtable or PSObject to a Yaml file.
+        This advanced function exports a Hashtable or PSObject to a Yaml file.
 
     .DESCRIPTION
-        This Advanced Function Exports a Hashtable or PSObject to a Yaml file
+        This advanced function exports a hashtable or PSObject to a Yaml file
 
     .PARAMETER InputObject
-        The parameter InputObject is a Hashtable or PSObject.
+        The parameter InputObject is a hashtable or PSObject.
 
     .PARAMETER Path
         The mandatory parameter Path is the location string of the Yaml file.
@@ -742,13 +742,13 @@ function Export-Yaml {
 function Export-Json {
     <#
     .SYNOPSIS
-        This Advance Function Exports a Hashtable or PSObject to a Json file.
+        This advanced function exports a hashtable or PSObject to a Json file.
 
     .DESCRIPTION
-        This Advanced Function Exports a Hashtable or PSObject to a Json file
+        This advanced function exports a hashtable or PSObject to a Json file
 
     .PARAMETER InputObject
-        The parameter InputObject is a Hashtable or PSObject.
+        The parameter InputObject is a hashtable or PSObject.
 
     .PARAMETER Path
         The mandatory parameter Path is the location string of the Json file.
@@ -788,10 +788,10 @@ function Export-Json {
 function Import-Json {
     <#
     .SYNOPSIS
-        This Advance Function imports a Json file and returns a PSCustomObject.
+        This advanced function imports a Json file and returns a PSCustomObject.
 
     .DESCRIPTION
-        This Advance Function imports a Json file and returns a PSCustomObject.
+        This advanced function imports a Json file and returns a PSCustomObject.
 
     .PARAMETER Path
         The mandatory parameter Path is the location string of the Json file.
@@ -822,10 +822,10 @@ function Import-Json {
 function Import-Yaml {
     <#
     .SYNOPSIS
-        This Advance Function imports a Yaml file and returns a PSCustomObject.
+        This advanced function imports a Yaml file and returns a PSCustomObject.
 
     .DESCRIPTION
-        This Advance Function imports a Yaml file and returns a PSCustomObject.
+        This advanced function imports a Yaml file and returns a PSCustomObject.
 
     .PARAMETER Path
         The mandatory parameter Path is the location string of the Yaml file.
