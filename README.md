@@ -304,7 +304,7 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
 
 Here is an Excel workbook with two worksheets (Virtual Machines and Virtual Networks). The code below will parse all the worksheets. It creates one object per row starting with row two. Where the property names are taken from row one of the column the data is in. The objects are addeded to the object array and returned.
 
-** Sheet Name: Virtual Machines **  
+**Sheet Name**: **Virtual Machines**  
 
 1 Hostname  |  Instance Size  |  Internal IP
 --------  |  -------------  |  -----------
@@ -313,7 +313,7 @@ Here is an Excel workbook with two worksheets (Virtual Machines and Virtual Netw
 4 VM03  |  Standard_D4  |  10.10.10.102  
 5 VM04  |  Standard_D4  |  10.10.10.103  
 
-** Sheet Name: Virtual Networks **  
+**Sheet Name**: **Virtual Networks**  
 
 1 Name  |  Resource Group  |  Location  |  Vnet Address Prefix  |  Deploy  
 ----  |  --------------  |  --------  |  -------------------  |  ------  
