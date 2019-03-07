@@ -308,31 +308,31 @@ Here is an Excel workbook with two worksheets (Virtual Machines and Virtual Netw
 
 1 Hostname  |  Instance Size  |  Internal IP
 --------  |  -------------  |  -----------
-2 HEN-P-USE1-VM01  |  Standard_D4  |  10.10.10.100  
-3 HEN-P-USE2-VM02  |  Standard_D4  |  10.10.10.101  
-4 HEN-P-USE1-VM03  |  Standard_D4  |  10.10.10.102  
-5 HEN-P-USE2-VM04  |  Standard_D4  |  10.10.10.103  
+2 VM01  |  Standard_D4  |  10.10.10.100  
+3 VM02  |  Standard_D4  |  10.10.10.101  
+4 VM03  |  Standard_D4  |  10.10.10.102  
+5 VM04  |  Standard_D4  |  10.10.10.103  
 
 ** Sheet Name: Virtual Networks **  
 
 1 Name  |  Resource Group  |  Location  |  Vnet Address Prefix  |  Deploy  
 ----  |  --------------  |  --------  |  -------------------  |  ------  
-2 VN-USE2-VNET01  |  RG-USE2-VNET01  |  eastus2  |  10.10.100.0/20  |  TRUE  
-3 VN-USC1-VNET01  |  RG-USC1-VNET01  |  northcentralus  |  10.11.100.0/20  |  TRUE  
+2 VNET-01  |  RG-1-VNET01  |  eastus2  |  10.10.100.0/20  |  TRUE  
+3 VNET-01  |  RG-2-VNET01  |  northcentralus  |  10.11.100.0/20  |  TRUE  
 
 So for the Worksheet Virtual Machines, the script will create four objects with properties Hostname, Instance Size and Internal IP. The data for each object is taken from each consecutive row starting with row two.  
 
 Object 1:  
 
 **Property:         Value**  
-Hostname:           HEN-P-USE1-VM01  
+Hostname:           VM01  
 Instance Size:      Standard_D4  
 Internal IP:        10.10.10.100  
 
 Object 2:  
 
 **Property:         Value**  
-Hostname:           HEN-P-USE1-VM02  
+Hostname:           VM02  
 Instance Size:      Standard_D4  
 Internal IP:        10.10.10.101  
 
