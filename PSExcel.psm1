@@ -456,7 +456,7 @@ function Get-WorksheetUsedRange {
             # Set the search order to be by columns.
             $SearchOrder = [Microsoft.Office.Interop.Excel.XlSearchOrder]::xlByColumns
             # Return the address of the last used column cell with data in it.
-            $hastable["Column"] = $worksheet.Cells.Find($What, $After, $LookIn, $LookAt, $SearchOrder, $XlSearchDirection, $MatchCase, $MatchByte, $SearchFormat).Column
+            $hashtable["Column"] = $worksheet.Cells.Find($What, $After, $LookIn, $LookAt, $SearchOrder, $XlSearchDirection, $MatchCase, $MatchByte, $SearchFormat).Column
             # Set the search order to be by rows.
             $SearchOrder = [Microsoft.Office.Interop.Excel.XlSearchOrder]::xlByRows
             # Return the address of the last used row cell with data in it.
@@ -526,17 +526,17 @@ function Get-WorksheetData {
             $returnArray = @()
         }
         Process {
-            for ($i = 1; $i -lt $lastRow; $i++)
+            for ($i = 1; $i -lt $UsedRange.Row; $i++)
                 {
-                    for ($j = 1; $j -le $lastColumn; $j++)
+                    for ($j = 1; $j -le $UsedRange.Column; $j++)
                     {
                         # If there is more than one column.
-                        if ($lastColumn -ne 1) {
+                        if ($UsedRange.Column -ne 1) {
                             # Then add a key value to the current hashtable. Where the key (i.e. header) is in row 1 and column $j and the value (i.e. data) is in row $i and column $j.
                             $hashtable[$header[1,$j]] = $data[$i,$j]
                         }
                         # If is only one column and there are more than two rows.
-                        elseif ($lastRow -gt 2) {
+                        elseif ($UsedRange.Row -gt 2) {
                             # Then add a key value to the current hashtable. Where the key (i.e. header) is just the header (row 1, column 1) and the value is in row $i and column 1.
                             $hashtable[$header] = $data[$i,1]
                         }
