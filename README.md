@@ -298,26 +298,26 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
         PS C:\> Export-Json -FilePath "C:\myYamlFile.yml"  
 ```  
 
-18. **Import-ExcelData**
-    **.DESCRIPTION**
-    	This script imports Microsoft Excel worksheets and puts the data in to a hashtable of pscustom objects. The hashtable keys are the names of the Excel worksheets with spaces omitted. The script imports data from all worksheets. It does not validate that the data started in cell A1 and is in format of regular rows and columns, which is required to load the data.
+18. **Import-ExcelData**  
+    **.DESCRIPTION**  
+    	This script imports Microsoft Excel worksheets and puts the data in to a hashtable of pscustom objects. The hashtable keys are the names of the Excel worksheets with spaces omitted. The script imports data from all worksheets. It does not validate that the data started in cell A1 and is in format of regular rows and columns, which is required to load the data.  
 
-    **.PARAMETER** Path
-        The mandatory parameter Path accepts a path string to the excel file. The string can be either the absolute or relative path.
+    **.PARAMETER** Path  
+        The mandatory parameter Path accepts a path string to the excel file. The string can be either the absolute or relative path.  
 
-    **.PARAMETER** Exclude
-        The optional parameter Exclude accepts a comma separated list of strings of worksheets to exclude from loading.
+    **.PARAMETER** Exclude  
+        The optional parameter Exclude accepts a comma separated list of strings of worksheets to exclude from loading.  
 
-    **.PARAMETER** HashtableReturn
-        The optional switch parameter HashtableReturn directs if the return array will contain hashtables or pscustom objects.
+    **.PARAMETER** HashtableReturn  
+        The optional switch parameter HashtableReturn directs if the return array will contain hashtables or pscustom objects.  
 
-    **.EXAMPLE**
-        The example below shows the command line use with Parameters.
-        PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx"
+    **.EXAMPLE**  
+        The example below shows the command line use with Parameters.  
+        PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx"  
 
-    	or
+    	or  
 
-        PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx" -Exclude "sheet2","sheet3"
+        PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx" -Exclude "sheet2","sheet3"  
 
 
 ## Working Example ##  
