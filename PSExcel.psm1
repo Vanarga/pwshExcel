@@ -295,15 +295,12 @@ function Add-Workbook {
     .DESCRIPTION
         Given the Microsoft Excel COM Object and Path to the Excel file, the function retuns the Workbook COM Object.
 
-    .PARAMETER Path
-        The mandatory parameter Path is the location string of the Excel file.
-
     .PARAMETER ObjExcel
         The mandatory parameter ObjExcel is needed to retrieve the Workbook COM Object.
 
     .EXAMPLE
         The example below returns the newly created Excel workbook COM Object.
-        PS C:\> Add-Workbook -ObjExcel $myExcelObj -Path "C:\Excel.xlsx"
+        PS C:\> Add-Workbook -ObjExcel $myExcelObj
 
     .NOTES
         Author: Michael van Blijdesteijn
@@ -520,14 +517,14 @@ function Get-WorksheetData {
             $header	= $workSheet.Range("A1",$lastColumnAddress).Value()
             # Get the values of the remaining rows to use as object values.
             $data	= $workSheet.Range("A2",$lastColumnRowAddress).Value()
-            # Define an Ordered hashtable.
-            $hashtable = [ordered]@{}
             # Define the return array.
             $returnArray = @()
         }
         Process {
             for ($i = 1; $i -lt $UsedRange.Row; $i++)
                 {
+                    # Define an Ordered hashtable.
+                    $hashtable = [ordered]@{}
                     for ($j = 1; $j -le $UsedRange.Column; $j++)
                     {
                         # If there is more than one column.
@@ -556,8 +553,6 @@ function Get-WorksheetData {
                         # If the HashtableReturn switch is $false (Default), convert the hashtable to a custom object and add it to the return array.
                         $returnArray += [pscustomobject]$hashtable
                     }
-                    # Clear the current hashtable.
-                    $hashtable.clear()
                 }
         }
         End {
@@ -979,6 +974,117 @@ function Import-Yaml {
         # Return the result array of custom objects.
         Return $InputObject
     }
+}
+
+function Import-ExcelData {
+    <#
+    .SYNOPSIS
+    	This script extracts all excel worksheet data and returns a hashtable of custom objects.
+
+    .DESCRIPTION
+    	This script imports Microsoft Excel worksheets and puts the data in to a hashtable of pscustom objects. The hashtable
+    	keys are the names of the Excel worksheets with spaces omitted. The script imports data from all worksheets. It does not
+    	validate that the data started in cell A1 and is in format of regular rows and columns, which is required to load the data.
+
+    .PARAMETER Path
+        The mandatory parameter Path accepts a path string to the excel file. The string can be either the absolute or relative path.
+
+    .PARAMETER Exclude
+        The optional parameter Exclude accepts a comma separated list of strings of worksheets to exclude from loading.
+
+    .PARAMETER HashtableReturn
+        The optional switch parameter HashtableReturn directs if the return array will contain hashtables or pscustom objects.
+
+    .EXAMPLE
+        The example below shows the command line use with Parameters.
+        PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx"
+
+    	or
+
+        PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx" -Exclude "sheet2","sheet3"
+
+    .NOTES
+
+        Author: Michael van Blijdesteijn
+        Last Edit: 2019-03-18
+        Version 1.0 - Import-ExcelData
+    #>
+
+    [cmdletbinding()]
+    Param (
+        [Parameter(Mandatory = $false,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true)]
+            [ValidateScript({Test-Path $_})]
+            [String]$Path,
+    	[Parameter(Mandatory = $false,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true)]
+    		[ValidateNotNullOrEmpty()]
+    		[String[]]$Exclude,
+    	[Parameter(Mandatory = $false,
+    		ValueFromPipeline = $true,
+    		ValueFromPipelineByPropertyName = $true)]
+    		[Switch]$HashtableReturn = $false
+    )
+
+    # If no path was specified, prompt for path until it has a value.
+    if (-not $Path) {
+    	# https://docs.microsoft.com/en-us/previous-versions/windows/silverlight/dotnet-windows-silverlight/cc189944(v%3dvs.95)
+    	Add-Type -AssemblyName System.Windows.Forms
+    	$openFileDialog = New-Object windows.forms.openfiledialog
+    	$openFileDialog.title = "Select Microsoft Excel Workbook to Import"
+    	$openFileDialog.InitialDirectory = $PSScriptRoot
+    	$openFileDialog.filter = "Excel Worksheets (*.xls, *.xlsx)|*.xls;*.xlsx"
+    	$openFileDialog.ShowHelp = $True
+    	if ($openFileDialog.ShowDialog() -eq "Cancel") {Return "Path was not specified."}
+    	$Path = $openFileDialog.FileName
+    }
+
+    # Check to see if the path is relative or absolute. A rooted path is absolute.
+    if (-not [System.IO.Path]::IsPathRooted($Path)) {
+    	# Resolve absolute path from relative path.
+    	$Path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+    }
+
+    # Create Microsoft Excel COM Object.
+    $obj = Open-Excel
+
+    # Load Microsoft Excel Workbook from location Path.
+    $wb = Get-Workbook -ObjExcel $obj -Path $Path
+
+    # Get all Excel worksheet names.
+    $ws = Get-WorksheetNames -Workbook $wb
+
+    # Declare the data array.
+    $data = @()
+
+    $ws | ForEach-Object {
+    	If ($HashtableReturn) {
+    		# Add each worksheet's hashtable objects to the data array.
+    		$data += Get-WorksheetData -Worksheet $(Get-Worksheet -Workbook $wb -SheetName $_) -HashtableReturn
+    	}
+    	else {
+    		# Add each worksheet's pscustom objects to the data array.
+    		$data += Get-WorksheetData -Worksheet $(Get-Worksheet -Workbook $wb -SheetName $_)
+    	}
+    }
+
+    # Close Excel.
+    Close-Excel -ObjExcel $obj
+
+    # Declare an ordered hashtable.
+    $ReturnSet = [Ordered]@{}
+
+    # Add all the pscustom objects from a worksheet to the hashtable with the key equal to the worksheet name.
+    # Exclude worksheets that were specified in the Exclude parameter.
+    ForEach ($name in $($ws | Where-Object {$Exclude -NotContains $_})) {
+    	$ReturnSet[$name.replace(" ","")] = $data | Where-Object {$_.WorkSheet -eq $name}
+    }
+
+    # Return the hashtable of custom objects.
+    Return $ReturnSet
+
 }
 
 # Export the functions above.
