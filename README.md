@@ -299,6 +299,7 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
 ```  
 
 18. **Import-ExcelData**  
+
     **.DESCRIPTION**  
     	This script imports Microsoft Excel worksheets and puts the data in to a hashtable of pscustom objects. The hashtable keys are the names of the Excel worksheets with spaces omitted. The script imports data from all worksheets. It does not validate that the data started in cell A1 and is in format of regular rows and columns, which is required to load the data.  
 
@@ -313,12 +314,13 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
 
     **.EXAMPLE**  
         The example below shows the command line use with Parameters.  
+```
         PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx"  
 
     	or  
 
         PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx" -Exclude "sheet2","sheet3"  
-
+```
 
 ## Working Example ##  
 
