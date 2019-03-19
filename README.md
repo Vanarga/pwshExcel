@@ -25,6 +25,7 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
 15. Export-Json
 16. Import-Jason
 17. Import-Yaml
+18. Import-ExcelData
 
 
 ## Function Help ##
@@ -117,16 +118,13 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
     **.DESCRIPTION**  
         Given the Microsoft Excel COM Object and Path to the Excel file, the function retuns the Workbook COM Object.  
 
-    **.PARAMETER** - Path  
-        The mandatory parameter Path is the location string of the Excel file.  
-
     **.PARAMETER** - ObjExcel  
         The mandatory parameter ObjExcel is needed to retrieve the Workbook COM Object.  
 
     **.EXAMPLE**  
         The example below returns the newly created Excel workbook COM Object.  
 ```
-        PS C:\> Add-Workbook -ObjExcel $myExcelObj -Path "C:\Excel.xlsx"  
+        PS C:\> Add-Workbook -ObjExcel $myExcelObj  
 ```
 7. **Save-Workbook**
 
@@ -300,25 +298,47 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
         PS C:\> Export-Json -FilePath "C:\myYamlFile.yml"  
 ```  
 
+18. **Import-ExcelData**
+    **.DESCRIPTION**
+    	This script imports Microsoft Excel worksheets and puts the data in to a hashtable of pscustom objects. The hashtable keys are the names of the Excel worksheets with spaces omitted. The script imports data from all worksheets. It does not validate that the data started in cell A1 and is in format of regular rows and columns, which is required to load the data.
+
+    **.PARAMETER** Path
+        The mandatory parameter Path accepts a path string to the excel file. The string can be either the absolute or relative path.
+
+    **.PARAMETER** Exclude
+        The optional parameter Exclude accepts a comma separated list of strings of worksheets to exclude from loading.
+
+    **.PARAMETER** HashtableReturn
+        The optional switch parameter HashtableReturn directs if the return array will contain hashtables or pscustom objects.
+
+    **.EXAMPLE**
+        The example below shows the command line use with Parameters.
+        PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx"
+
+    	or
+
+        PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx" -Exclude "sheet2","sheet3"
+
+
 ## Working Example ##  
 
 Here is an Excel workbook with two worksheets (Virtual Machines and Virtual Networks). The code below will parse all the worksheets. It creates one object per row starting with row two. Where the property names are taken from row one of the column the data is in. The objects are addeded to the object array and returned.
 
-**Sheet Name**: **Virtual Machines**  
+** Sheet Name: Virtual Machines **  
 
 1 Hostname  |  Instance Size  |  Internal IP
 --------  |  -------------  |  -----------
-2 VM01  |  Standard_D4  |  10.10.10.100  
-3 VM02  |  Standard_D4  |  10.10.10.101  
-4 VM03  |  Standard_D4  |  10.10.10.102  
-5 VM04  |  Standard_D4  |  10.10.10.103  
+2 VM01  |  Standard_D4  |  10.10.1.10  
+3 VM02  |  Standard_D4  |  10.10.1.11  
+4 VM03  |  Standard_D4  |  10.10.1.12  
+5 VM04  |  Standard_D4  |  10.10.1.13  
 
-**Sheet Name**: **Virtual Networks**  
+** Sheet Name: Virtual Networks **  
 
 1 Name  |  Resource Group  |  Location  |  Vnet Address Prefix  |  Deploy  
 ----  |  --------------  |  --------  |  -------------------  |  ------  
-2 VNET-01  |  RG-1-VNET01  |  eastus2  |  10.10.100.0/20  |  TRUE  
-3 VNET-01  |  RG-2-VNET01  |  northcentralus  |  10.11.100.0/20  |  TRUE  
+2 VNET01  |  RG-VNT-01  |  eastus  |  10.10.1.0/20  |  TRUE  
+3 VNET01  |  RG-VNT-01  |  northcentralus  |  10.11.1.0/20  |  TRUE  
 
 So for the Worksheet Virtual Machines, the script will create four objects with properties Hostname, Instance Size and Internal IP. The data for each object is taken from each consecutive row starting with row two.  
 
@@ -327,30 +347,17 @@ Object 1:
 **Property:         Value**  
 Hostname:           VM01  
 Instance Size:      Standard_D4  
-Internal IP:        10.10.10.100  
+Internal IP:        10.10.1.10  
 
 Object 2:  
 
 **Property:         Value**  
 Hostname:           VM02  
 Instance Size:      Standard_D4  
-Internal IP:        10.10.10.101  
+Internal IP:        10.10.1.11  
 
 ```  
-$myObjExcel = Open-Excel  
-
-$wb = Get-Workbook -ObjExcel $myExcelObj -Path "C:\Excel.xlsx"  
-
-$sheetnames = Get-WorksheetNames -Workbook $wb  
-
-$data = @()
-
-Foreach ($s in $sheetnames) {  
-
-    $ws = Get-Worksheet -Workbook $wb -SheetName $s  
-
-    $data += Get-WorksheetData $ws  
-}  
+$data = Import-ExcelData -Path "C:\Excel.xlsx"  
 
 Write-Output $data | Out-String  
 
