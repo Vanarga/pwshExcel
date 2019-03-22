@@ -481,18 +481,21 @@ function Get-WorksheetData {
         The parameter Worksheet is the Excel worksheet com object passed to the function.
 
     .PARAMETER HashtableReturn
-        The switch parameter HashtableReturn with default value False, causes the function to return an array of 
-	hashtables instead of an array of objects.
+        The switch parameter HashtableReturn with default value False, causes the function to return an array of
+    hashtables instead of an array of objects.
+
+    .PARAMETER TrimHeaders
+        The optional switch parameter TrimHeaders, removes whitespace from the column headers when creating the object or hashtable.
 
     .EXAMPLE
-        The example below returns an array of custom objects using the first row as object parameter names and each 
+        The example below returns an array of custom objects using the first row as object parameter names and each
 	additional row as object data.
         PS C:\> Get-WorksheetData $Worksheet
 
     .NOTES
         Author: Michael van Blijdesteijn
-        Last Edit: 2019-01-19
-        Version 1.0 - Get-WorksheetData
+        Last Edit: 2019-03-19
+        Version 1.1 - Get-WorksheetData
     #>
     [cmdletbinding()]
         Param (
@@ -504,7 +507,12 @@ function Get-WorksheetData {
             [Parameter(Mandatory = $false,
                 ValueFromPipeline = $true,
                 ValueFromPipelineByPropertyName = $true)]
-                [Switch]$HashtableReturn = $false)
+                [Switch]$HashtableReturn = $false,
+            [Parameter(Mandatory = $false,
+                ValueFromPipeline = $true,
+                ValueFromPipelineByPropertyName = $true)]
+                [Switch]$TrimHeaders = $false
+        )
         Begin {
             $usedRange = Get-WorksheetUsedRange -worksheet $worksheet
 
@@ -514,7 +522,13 @@ function Get-WorksheetData {
             # Get the Address of the last row on the worksheet.
             $lastColumnRowAddress	= $workSheet.Cells.Item($usedRange.Row,$usedRange.Column).address()
             # Get the values of the first row to use as object Properties.
-            $header	= $workSheet.Range("A1",$lastColumnAddress).Value()
+            $headers	= $workSheet.Range("A1",$lastColumnAddress).Value()
+            # If $TrimHeaders is true, remove whitespce from the headers.
+            # https://stackoverflow.com/questions/24355760/removing-spaces-from-a-variable-input-using-powershell-4-0
+            # To remove all spaces at the beginning and end of the line, and replace all double-and-more-spaces or tab symbols to spacebar symbol.
+            If ($TrimHeaders) {
+                $headers = $headers -replace '(^\s+|\s+$)','' -replace '\s+',''
+            }
             # Get the values of the remaining rows to use as object values.
             $data	= $workSheet.Range("A2",$lastColumnRowAddress).Value()
             # Define the return array.
@@ -530,17 +544,17 @@ function Get-WorksheetData {
                         # If there is more than one column.
                         if ($UsedRange.Column -ne 1) {
                             # Then add a key value to the current hashtable. Where the key (i.e. header) is in row 1 and column $j and the value (i.e. data) is in row $i and column $j.
-                            $hashtable[$header[1,$j]] = $data[$i,$j]
+                            $hashtable[$headers[1,$j]] = $data[$i,$j]
                         }
                         # If is only one column and there are more than two rows.
                         elseif ($UsedRange.Row -gt 2) {
                             # Then add a key value to the current hashtable. Where the key (i.e. header) is just the header (row 1, column 1) and the value is in row $i and column 1.
-                            $hashtable[$header] = $data[$i,1]
+                            $hashtable[$headers] = $data[$i,1]
                         }
                         # If there is only there is only one column and two rows.
                         else {
                             # Then add a key value to the current hashtable. Where the key (i.e. header) is just the header (row 1, column 1) and the value is in row 2 and column 1.
-                            $hashtable[$header] = $data
+                            $hashtable[$headers] = $data
                         }
                     }
                     # Add Worksheet NoteProperty Item to Hashtable.
@@ -979,11 +993,11 @@ function Import-Yaml {
 function Import-ExcelData {
     <#
     .SYNOPSIS
-    	This script extracts all excel worksheet data and returns a hashtable of custom objects.
+    	This function extracts all excel worksheet data and returns a hashtable of custom objects.
 
     .DESCRIPTION
-    	This script imports Microsoft Excel worksheets and puts the data in to a hashtable of pscustom objects. The hashtable
-    	keys are the names of the Excel worksheets with spaces omitted. The script imports data from all worksheets. It does not
+    	This function imports Microsoft Excel worksheets and puts the data in to a hashtable of pscustom objects. The hashtable
+    	keys are the names of the Excel worksheets with spaces omitted. The function imports data from all worksheets. It does not
     	validate that the data started in cell A1 and is in format of regular rows and columns, which is required to load the data.
 
     .PARAMETER Path
@@ -994,6 +1008,9 @@ function Import-ExcelData {
 
     .PARAMETER HashtableReturn
         The optional switch parameter HashtableReturn directs if the return array will contain hashtables or pscustom objects.
+
+    .PARAMETER TrimHeaders
+    The optional switch parameter TrimHeaders, removes whitespace from the column headers when creating the object or hashtable.
 
     .EXAMPLE
         The example below shows the command line use with Parameters.
@@ -1025,20 +1042,21 @@ function Import-ExcelData {
     	[Parameter(Mandatory = $false,
     		ValueFromPipeline = $true,
     		ValueFromPipelineByPropertyName = $true)]
-    		[Switch]$HashtableReturn = $false
+            [Switch]$HashtableReturn = $false,
+        [Parameter(Mandatory = $false,
+    		ValueFromPipeline = $true,
+    		ValueFromPipelineByPropertyName = $true)]
+    		[Switch]$Trimheaders = $false
     )
 
     # If no path was specified, prompt for path until it has a value.
     if (-not $Path) {
-    	# https://docs.microsoft.com/en-us/previous-versions/windows/silverlight/dotnet-windows-silverlight/cc189944(v%3dvs.95)
-    	Add-Type -AssemblyName System.Windows.Forms
-    	$openFileDialog = New-Object windows.forms.openfiledialog
-    	$openFileDialog.title = "Select Microsoft Excel Workbook to Import"
-    	$openFileDialog.InitialDirectory = $PSScriptRoot
-    	$openFileDialog.filter = "Excel Worksheets (*.xls, *.xlsx)|*.xls;*.xlsx"
-    	$openFileDialog.ShowHelp = $True
-    	if ($openFileDialog.ShowDialog() -eq "Cancel") {Return "Path was not specified."}
-    	$Path = $openFileDialog.FileName
+        Try {
+            $Path = Read-ExcelPath -Title "Select Microsoft Excel Workbook to Import" -ErrorAction Stop
+        }
+        Catch {
+            Return "Path not specified."
+        }
     }
 
     # Check to see if the path is relative or absolute. A rooted path is absolute.
@@ -1062,11 +1080,11 @@ function Import-ExcelData {
     $ws | ForEach-Object {
     	If ($HashtableReturn) {
     		# Add each worksheet's hashtable objects to the data array.
-    		$data += Get-WorksheetData -Worksheet $(Get-Worksheet -Workbook $wb -SheetName $_) -HashtableReturn
+    		$data += Get-WorksheetData -Worksheet $(Get-Worksheet -Workbook $wb -SheetName $_) -HashtableReturn -TrimHeaders:$Trimheaders
     	}
     	else {
     		# Add each worksheet's pscustom objects to the data array.
-    		$data += Get-WorksheetData -Worksheet $(Get-Worksheet -Workbook $wb -SheetName $_)
+    		$data += Get-WorksheetData -Worksheet $(Get-Worksheet -Workbook $wb -SheetName $_) -TrimHeaders:$Trimheaders
     	}
     }
 
@@ -1087,6 +1105,46 @@ function Import-ExcelData {
 
 }
 
+function Read-ExcelPath {
+    <#
+    .SYNOPSIS
+    	This function opens a gui window dialog to navigate to an excel file.
+
+    .DESCRIPTION
+    	This function opens a gui window dialog to navigate to an excel file and returns the path.
+
+    .PARAMETER Title
+        The mandatory parameter Title, is a string that appears on the navigation window.
+
+    .EXAMPLE
+        The example below shows the command line use with Parameters.
+        PS C:\> Read-ExcelPath -Title "Select Microsoft Excel Workbook to Import"
+
+    .NOTES
+
+        Author: Michael van Blijdesteijn
+        Last Edit: 2019-03-19
+        Version 1.0 - Read-ExcelPath
+    #>
+
+    [cmdletbinding()]
+    Param (
+        [Parameter(Mandatory = $true,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true)]
+            [String]$Title
+    )
+    # https://docs.microsoft.com/en-us/previous-versions/windows/silverlight/dotnet-windows-silverlight/cc189944(v%3dvs.95)
+    Add-Type -AssemblyName System.Windows.Forms
+    $openFileDialog = New-Object windows.forms.openfiledialog
+    $openFileDialog.title = $Title
+    $openFileDialog.InitialDirectory = $pwd.path
+    $openFileDialog.filter = "Excel Worksheets (*.xls, *.xlsx)|*.xls;*.xlsx"
+    $openFileDialog.ShowHelp = $True
+    $openFileDialog.ShowDialog() | Out-Null
+    Return $openFileDialog.FileName
+}
+
 # Export the functions above.
 Export-ModuleMember -Function 'Add-*'
 Export-ModuleMember -Function 'Close-*'
@@ -1094,5 +1152,6 @@ Export-ModuleMember -Function 'Export-*'
 Export-ModuleMember -Function 'Get-*'
 Export-ModuleMember -Function 'Import-*'
 Export-ModuleMember -Function 'Open-*'
+Export-ModuleMember -Function 'Read-*'
 Export-ModuleMember -Function 'Set-*'
 Export-ModuleMember -Function 'Save-*'
