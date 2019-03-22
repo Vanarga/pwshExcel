@@ -26,7 +26,7 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
 16. Import-Jason
 17. Import-Yaml
 18. Import-ExcelData
-
+19. Read-ExcelPath
 
 ## Function Help ##
 1. **Open-Excel** - Creates a new excel COM object.  
@@ -167,6 +167,9 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
     **.PARAMETER** - HashtableReturn  
         The switch parameter HashtableReturn with default value False, causes the function to return an array of hashtables instead of an array of objects.  
 
+    **.PARAMETER** - TrimHeaders  
+    The optional switch parameter TrimHeaders, removes whitespace from the column headers when creating the object or hashtable.  
+
     **.EXAMPLE**  
         The example below returns an array of custom objects using the first row as object parameter names and each additional row as object data.  
 ```
@@ -301,25 +304,42 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
 18. **Import-ExcelData**  
 
     **.DESCRIPTION**  
-    	This script imports Microsoft Excel worksheets and puts the data in to a hashtable of pscustom objects. The hashtable keys are the names of the Excel worksheets with spaces omitted. The script imports data from all worksheets. It does not validate that the data started in cell A1 and is in format of regular rows and columns, which is required to load the data.  
+    	This function imports Microsoft Excel worksheets and puts the data in to a hashtable of pscustom objects. The hashtable keys are the names of the Excel worksheets with spaces omitted. The function imports data from all worksheets. It does not validate that the data started in cell A1 and is in format of regular rows and columns, which is required to load the data.  
 
-    **.PARAMETER** Path  
-        The mandatory parameter Path accepts a path string to the excel file. The string can be either the absolute or relative path.  
+    **.PARAMETER** - Path  
+        The mandatory parameter Path accepts a path string to the excel file. The string can be either the absolute or relative path.
 
-    **.PARAMETER** Exclude  
-        The optional parameter Exclude accepts a comma separated list of strings of worksheets to exclude from loading.  
+    **.PARAMETER** - Exclude  
+        The optional parameter Exclude accepts a comma separated list of strings of worksheets to exclude from loading.
 
-    **.PARAMETER** HashtableReturn  
+    **.PARAMETER** - HashtableReturn  
         The optional switch parameter HashtableReturn directs if the return array will contain hashtables or pscustom objects.  
 
+    **.PARAMETER** - TrimHeaders  
+    The optional switch parameter TrimHeaders, removes whitespace from the column headers when creating the object or hashtable.  
+
     **.EXAMPLE**  
-        The example below shows the command line use with Parameters.  
+        The example below shows the command line use with Parameters.
 ```
-        PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx"  
+        PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx"
 
-    	or  
+    	or
 
-        PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx" -Exclude "sheet2","sheet3"  
+        PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx" -Exclude "sheet2","sheet3"
+```
+
+18. **Read-ExcelPath**  
+
+    **.DESCRIPTION**  
+        This function opens a gui window dialog to navigate to an excel file and returns the path.
+
+    **.PARAMETER** - Title  
+        The mandatory parameter Title, is a string that appears on the navigation window.
+
+    **.EXAMPLE**  
+        The example below shows the command line use with Parameters.
+```
+        PS C:\> Read-Path -Title "Select Microsoft Excel Workbook to Import"
 ```
 
 ## Working Example ##  
