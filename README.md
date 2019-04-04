@@ -399,7 +399,7 @@ Here is an Excel workbook with two worksheets (Virtual Machines and Virtual Netw
 4 VM03  |  Standard_D4  |  10.10.1.12  
 5 VM04  |  Standard_D4  |  10.10.1.13  
 
-###Sheet Name: Virtual Networks###  
+**Sheet Name**: **Virtual Networks**  
 
 1 Name  |  Resource Group  |  Location  |  Vnet Address Prefix  |  Deploy  
 ----  |  --------------  |  --------  |  -------------------  |  ------  
@@ -408,14 +408,14 @@ Here is an Excel workbook with two worksheets (Virtual Machines and Virtual Netw
 
 So for the Worksheet Virtual Machines, the script will create four objects with properties Hostname, Instance Size and Internal IP. The data for each object is taken from each consecutive row starting with row two.  
 
-###Object 1:  
+**Object 1**:  
 
 **Property:         Value**  
 Hostname:           VM01  
 Instance Size:      Standard_D4  
 Internal IP:        10.10.1.10  
 
-###Object 2:  
+**Object 2**:  
 
 **Property:         Value**  
 Hostname:           VM02  
