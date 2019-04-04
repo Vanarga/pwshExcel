@@ -37,14 +37,24 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
 **.PARAMETER** - Visible  
     The parameter switch Visible when specified will make Excel visible on the desktop.  
 
+**.PARAMETER** - DisplayAlerts  
+    The parameter switch DisplayAlerts when specified will make Excel Display Alerts if any are triggered.  
+
+**.PARAMETER** - AskToUpdateLinks  
+    The parameter switch AskToUpdateLinks when specified will make Excel prompt to Update Links.  
+
 **.EXAMPLE**  
     The example below returns the Excel COM object when used.  
 ```
-    PS C:\> $myObjExcel = Open-Excel  
+    The example below returns the Excel COM object when used.
 
-    or  
+    Open-Excel [-Visible] [-DisplayAlerts] [-AskToUpdateLinks]
 
-    PS C:\> $myObjExcel = Open-Excel -Visible  
+    PS C:\> $myObjExcel = Open-Excel
+
+    or
+
+    PS C:\> $myObjExcel = Open-Excel -Visible
 ```
 2. **Close-Excel** - Close Excel and release COM objects.
 
@@ -60,7 +70,9 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
     **.EXAMPLE**  
         The example below closes the excel instance defined by the COM Objects from the parameter section.  
 ```
-        PS C:\> Close-Excel -ObjExcel $myObjExcel -Workbook $wb  
+        Close-Excel -ObjExcel <PS Excel COM Object>
+
+        PS C:\> Close-Excel -ObjExcel $myObjExcel
 ```
 3. **Get-Workbook**
 
@@ -71,12 +83,14 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
         The mandatory parameter ObjExcel is the Excel COM Object passed to the function.  
 
     **.PARAMETER** - Path  
-        The mandatory parameter Path is the location string of the Excel file. Relative and Absolute paths are supported.  
+        The optional parameter Path is the location string of the Excel file. Relative and Absolute paths are supported.  
 
     **.EXAMPLE**  
         The example below returns the workbook COM object specified by Path.  
 ```
-        PS C:\> $wb = Get-Workbook -ObjExcel $myExcelObj -Path "C:\Excel.xlsx"  
+        Get-Workbook -ObjExcel [-Path <String>]
+
+        PS C:\> $wb = Get-Workbook -ObjExcel $myExcelObj -Path "C:\Excel.xlsx"
 ```
 4. **Get-Worksheet**
 
@@ -92,7 +106,9 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
     **.EXAMPLE**  
         The example below returns the named "Sheet1" worksheet COM Object.  
 ```
-        PS C:\> $ws = Get-Worksheet -Workbook $wb -SheetName "Sheet1"  
+        Get-Worksheet -Workbook <PS Excel Workbook COM Object> -SheetName <String>
+
+        PS C:\> $ws = Get-Worksheet -Workbook $wb -SheetName "Sheet1"
 ```
 5. **Add-Worksheet**
 
@@ -106,12 +122,14 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
         The mandatory parameter Workbook is the workbook COM Object passed to the function.  
 
     **.PARAMETER** - Sheetname  
-        The parameter Sheetname is a string passed to the function to name the newly created worksheet.  
+        The optional parameter Sheetname is a string passed to the function to name the newly created worksheet.  
 
     **.EXAMPLE**  
         The example below creates a new worksheet named Data.  
 ```
-        PS C:\> Add-Worksheet -ObjExcel $myObjExcel -Workbook $wb -Sheetname "Data"  
+        Add-Worksheet -ObjExcel <PS Excel COM Object> -Workbook <PS Excel COM Workbook Object> [-SheetName <String>]
+
+        PS C:\> Add-Worksheet -ObjExcel $myObjExcel -Workbook $wb -Sheetname "Data"
 ```
 6. **Add-Workbook**
 
@@ -124,7 +142,9 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
     **.EXAMPLE**  
         The example below returns the newly created Excel workbook COM Object.  
 ```
-        PS C:\> Add-Workbook -ObjExcel $myExcelObj  
+        Add-Workbook -ObjExcel <PS Excel COM Object>
+
+        PS C:\> Add-Workbook -ObjExcel $myExcelObj
 ```
 7. **Save-Workbook**
 
@@ -140,7 +160,9 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
     **.EXAMPLE**  
         The example below Saves the workbook as C:\Excel.xlsx.  
 ```
-        PS C:\> Save-Workbook -Workbook $wb -Path "C:\Excel.xlsx"  
+        Save-Workbook -Workbook <PS Excel COM Workbook Object> -Path <String>
+
+        PS C:\> Save-Workbook -Workbook $wb -Path "C:\Excel.xlsx"
 ```
 8. **Get-WorksheetUsedRange**
 
@@ -148,12 +170,14 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
         This advanced function returns a hashtable containing the last used column and last used row of a worksheet..  
 
     **.PARAMETER** - Worksheet  
-        The parameter Worksheet is the Excel worksheet com object passed to the function.  
+        The mandatory parameter Worksheet is the Excel worksheet com object passed to the function.  
 
     **.EXAMPLE**  
         The example below returns a hashtable containing the last used column and row of the referenced worksheet.  
 ```
-        PS C:\> Get-WorksheetUsedRange $Worksheet  
+        Get-WorksheetUsedRange -Worksheet <PS Excel Worksheet Object>
+
+        PS C:\> Get-WorksheetUsedRange -Worksheet $myWorksheet
 ```
 9. **Get-WorksheetData**
 
@@ -162,18 +186,20 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
         The first row will be used as the object members and each additional row will form the object data for that member.  
 
     **.PARAMETER** - Worksheet  
-        The parameter Worksheet is the Excel worksheet com object passed to the function.  
+        The mandatory parameter Worksheet is the Excel worksheet com object passed to the function.  
 
     **.PARAMETER** - HashtableReturn  
-        The switch parameter HashtableReturn with default value False, causes the function to return an array of hashtables instead of an array of objects.  
+        The optional switch parameter HashtableReturn with default value False, causes the function to return an array of hashtables instead of an array of objects.  
 
     **.PARAMETER** - TrimHeaders  
-    The optional switch parameter TrimHeaders, removes whitespace from the column headers when creating the object or hashtable.  
+        The optional switch parameter TrimHeaders, removes whitespace from the column headers when creating the object or hashtable.  
 
     **.EXAMPLE**  
         The example below returns an array of custom objects using the first row as object parameter names and each additional row as object data.  
 ```
-        PS C:\> Get-WorksheetData $Worksheet  
+        Get-WorksheetData -Worksheet <PS Excel Worksheet COM Object> [-HashtableReturn] [-TrimHeaders]
+
+        PS C:\> Get-WorksheetData -Worksheet $myWorksheet
 ```
 10. **Set-WorksheetData**
 
@@ -182,18 +208,17 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
         The object values are placed beneath the headers on each successive row.  
 
     **.PARAMETER** - Worksheet  
-        The parameter Worksheet is the Excel worksheet com object passed to the function.  
+        The mandatory parameter Worksheet is the Excel worksheet com object passed to the function.  
 
     **.PARAMETER** - ImputArray  
-        The parameter ImputArray is an Array of custom objects.  
-
-    **.PARAMETER** - HashtableReturn  
-        The switch parameter HashtableReturn with default value False, causes the function to return an array of hashtables instead of an array of objects.  
+        The mandatory parameter ImputArray is an Array of custom objects.  
 
     **.EXAMPLE**  
         The example below returns an array of custom objects using the first row as object parameter names and each additional row as object data.  
 ```
-        PS C:\> Set-WorksheetData $Worksheet  
+        Set-WorksheetData -Worksheet <PS Excel Worksheet COM Object> -InputArray <PS Object Array>
+
+        PS C:\> Set-WorksheetData -Worksheet $Worksheet -ImputArray $myObjectArray
 ```
 11. **Set-WorksheetName**
 
@@ -201,12 +226,14 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
         This Advance Function sets the name of the given worksheet.  
 
     **.PARAMETER** - Worksheet  
-        The parameter Worksheet is the Excel worksheet com object passed to the function.  
+        The mandatory parameter Worksheet is the Excel worksheet com object passed to the function.  
 
     **.EXAMPLE**  
         The example below renames the worksheet to Data unless that name is already in use.  
 ```
-        PS C:\> Set-WorksheetName -Worksheet $ws -SheetName "Data"  
+        Set-WorksheetName -Worksheet <PS Excel Worksheet COM Object> -SheetName <String>
+
+        PS C:\> Set-WorksheetName -Worksheet $myWorksheet -SheetName "Data"
 ```
 12. **Get-WorksheetNames**
 
@@ -214,12 +241,14 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
         This Advance Function returns an array of strings of all worksheets in a workbook.  
 
     **.PARAMETER** - Workbook  
-        The parameter Workbook is the Excel workbook com object passed to the function.  
+        The mandatory parameter Workbook is the Excel workbook com object passed to the function.  
 
     **.EXAMPLE**  
         The example below renames the worksheet to Data unless that name is already in use.  
 ```
-        PS C:\> Get-WorksheetNames -Workbook $wb  
+        Get-WorksheetNames -Workbook <PS Excel Workbook COM Object>
+
+        PS C:\> Get-WorksheetNames -Workbook $myWorkbook
 ```
 13. **ConvertPSObjectToHashtable**
 
@@ -227,12 +256,14 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
         This Advance Function returns a Hashtable converted from a PSObject and will return work with nested PSObjects.  
 
     **.PARAMETER** - InputObject  
-        The parameter InputObject is a PSObject.  
+        The mandatory parameter InputObject is a PSObject.  
 
     **.EXAMPLE**  
         The example below returns a hashtable created from the myPSObject PSObject.  
 ```
-        PS C:\> $myNewHash = ConvertPSObjectToHashtable $myPSObject  
+        ConvertPSObjectToHashtable -InputObject <PSObject>
+
+        PS C:\> $myNewHash = ConvertPSObjectToHashtable -InputObject $myPSObject
 ```
 14. **Export-Yaml**
 
@@ -240,7 +271,7 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
         This Advanced Function Exports a Hashtable or PSObject to a Yaml file  
 
     **.PARAMETER** - InputObject  
-        The parameter InputObject is a Hashtable or PSObject.  
+        The mandatory parameter InputObject is a Hashtable or PSObject.  
 
     **.PARAMETER** - Path  
         The mandatory parameter Path is the location string of the Yaml file.  
@@ -248,11 +279,13 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
     **.EXAMPLE**  
         The example below returns a hashtable created from the myPSObject PSObject.  
 ```
-        PS C:\> Export-Yaml -InputObject $myHastable -FilePath "C:\myYamlFile.yml"  
+        Export-Yaml -InputObject <PSObject> -Path <String>
 
-        or  
+        PS C:\> Export-Yaml -InputObject $myHastable -FilePath "C:\myYamlFile.yml"
 
-        PS C:\> Export-Yaml -InputObject $myPSObject -FilePath "C:\myYamlFile.yml"  
+        or
+
+        PS C:\> Export-Yaml -InputObject $myPSObject -FilePath "C:\myYamlFile.yml"
 ```
 15. **Export-Json**
 
@@ -260,7 +293,7 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
         This Advanced Function Exports a Hashtable or PSObject to a Json file  
 
     **.PARAMETER** - InputObject  
-        The parameter InputObject is a Hashtable or PSObject.  
+        The mandatory parameter InputObject is a Hashtable or PSObject.  
 
     **.PARAMETER** - Path  
         The mandatory parameter Path is the location string of the Json file.  
@@ -268,11 +301,13 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
     **.EXAMPLE**  
         The example below returns a hashtable created from the myPSObject PSObject.  
 ```
-        PS C:\> Export-Json -InputObject $myHastable -FilePath "C:\myJsonFile.json"  
+        Export-Json -InputObject <PSObject> -Path <String>
 
-        or  
+        PS C:\> Export-Json -InputObject $myHastable -FilePath "C:\myJsonFile.json"
 
-        PS C:\> Export-Json -InputObject $myPSObject -FilePath "C:\myJsonFile.json"  
+        or
+
+        PS C:\> Export-Json -InputObject $myPSObject -FilePath "C:\myJsonFile.json"
 ```
 16. **Import-Jason**
 
@@ -285,7 +320,9 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
     **.EXAMPLE**  
         The example below returns a pscustomobject created from the contents of C:\myJasonFile.json.  
 ```
-        PS C:\> Export-Json -FilePath "C:\myJsonFile.json"  
+        Import-Json -Path <String>
+
+        PS C:\> Import-Json -Path "C:\myJsonFile.json"
 ```
 17. **Import-Yaml**
 
@@ -298,7 +335,9 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
     **.EXAMPLE**  
         The example below returns a pscustomobject created from the contents of C:\myYamlFile.yml.  
 ```
-        PS C:\> Export-Json -FilePath "C:\myYamlFile.yml"  
+        Import-Yaml -Path <String>
+
+        PS C:\> Import-Yaml -Path "C:\myYamlFile.yml"
 ```  
 
 18. **Import-ExcelData**  
@@ -307,7 +346,7 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
     	This function imports Microsoft Excel worksheets and puts the data in to a hashtable of pscustom objects. The hashtable keys are the names of the Excel worksheets with spaces omitted. The function imports data from all worksheets. It does not validate that the data started in cell A1 and is in format of regular rows and columns, which is required to load the data.  
 
     **.PARAMETER** - Path  
-        The mandatory parameter Path accepts a path string to the excel file. The string can be either the absolute or relative path.
+        The optional parameter Path accepts a path string to the excel file. The string can be either the absolute or relative path.
 
     **.PARAMETER** - Exclude  
         The optional parameter Exclude accepts a comma separated list of strings of worksheets to exclude from loading.
@@ -316,16 +355,19 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
         The optional switch parameter HashtableReturn directs if the return array will contain hashtables or pscustom objects.  
 
     **.PARAMETER** - TrimHeaders  
-    The optional switch parameter TrimHeaders, removes whitespace from the column headers when creating the object or hashtable.  
+        The optional switch parameter TrimHeaders, removes whitespace from the column headers when creating the object or hashtable.  
 
     **.EXAMPLE**  
         The example below shows the command line use with Parameters.
 ```
+        Import-ExcelData [-Path <String>] [-Exclude <String>,<String>,...] [-HashtableReturn] [-TrimHeaders]
+
         PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx"
 
     	or
 
         PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx" -Exclude "sheet2","sheet3"
+
 ```
 
 18. **Read-ExcelPath**  
@@ -339,7 +381,9 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
     **.EXAMPLE**  
         The example below shows the command line use with Parameters.
 ```
-        PS C:\> Read-Path -Title "Select Microsoft Excel Workbook to Import"
+        ReadExcelPath -Title <String>
+
+        PS C:\> Read-ExcelPath -Title "Select Microsoft Excel Workbook to Import"
 ```
 
 ## Working Example ##  
