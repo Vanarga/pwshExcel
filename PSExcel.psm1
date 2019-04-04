@@ -11,6 +11,9 @@ function Open-Excel {
 
 .EXAMPLE
     The example below returns the Excel COM object when used.
+
+    Open-Excel [-Visible] [-DisplayAlerts] [-AskToUpdateLinks]
+
     PS C:\> $myObjExcel = Open-Excel
 
     or
@@ -66,12 +69,12 @@ function Close-Excel {
     .PARAMETER ObjExcel
         The mandatory parameter ObjExcel is the Excel COM Object passed to the function.
 
-    .PARAMETER Workbook
-        The mandatory parameter Workbook is the workbook COM Object passed to the function.
-
     .EXAMPLE
         The example below closes the excel instance defined by the COM Objects from the parameter section.
-        PS C:\> Close-Excel -ObjExcel $myObjExcel -Workbook $wb
+
+        Close-Excel -ObjExcel <PS Excel COM Object>
+
+        PS C:\> Close-Excel -ObjExcel $myObjExcel
 
     .NOTES
         Author: Michael van Blijdesteijn
@@ -138,6 +141,9 @@ function Get-Workbook {
 
     .EXAMPLE
         The example below returns the workbook COM object specified by Path.
+
+        Get-Workbook -ObjExcel [-Path <String>]
+
         PS C:\> $wb = Get-Workbook -ObjExcel $myExcelObj -Path "C:\Excel.xlsx"
 
     .NOTES
@@ -152,12 +158,21 @@ function Get-Workbook {
                 ValueFromPipelineByPropertyName = $true)]
                 [ValidateScript({$_.GetType().FullName -eq "Microsoft.Office.Interop.Excel.ApplicationClass"})]
                 $ObjExcel,
-            [Parameter(Mandatory = $true,
+            [Parameter(Mandatory = $false,
                 ValueFromPipeline = $true,
                 ValueFromPipelineByPropertyName = $true)]
                 [ValidateScript({Test-Path $_})]
                 [String]$Path)
         Begin {
+            # If no path was specified, prompt for path until it has a value.
+            if (-not $Path) {
+                $Path = Read-ExcelPath -Title "Select the Excel WorkBook you wish to open."
+                if (-not $Path) {Return "Error, Workbook not specified."}
+            }
+            # Check to make sure the file is either a xls or xlsx file.
+            if ((Get-ChildItem -Path $Path).Extension -notmatch "xls") {
+                Return {"File is not an excel file. Please select a valid .xls or .xlsx file."}
+            }
             # Check to see if the path is relative or absolute. A rooted path is absolute.
             if (-not [System.IO.Path]::IsPathRooted($Path)) {
                 # Resolve absolute path from relative path.
@@ -190,6 +205,9 @@ function Get-Worksheet {
 
     .EXAMPLE
         The example below returns the named "Sheet1" worksheet COM Object.
+
+        Get-Worksheet -Workbook <PS Excel Workbook COM Object> -SheetName <String>
+
         PS C:\> $ws = Get-Worksheet -Workbook $wb -SheetName "Sheet1"
 
     .NOTES
@@ -229,7 +247,7 @@ function Add-Worksheet {
         This advanced function creates a new worksheet.
 
     .DESCRIPTION
-        This function creates a new worksheet in the given workbook. if a Sheetname is specified it renames the  
+        This function creates a new worksheet in the given workbook. if a Sheetname is specified it renames the
 	new worksheet to that name.
 
     .PARAMETER ObjExcel
@@ -239,10 +257,13 @@ function Add-Worksheet {
         The mandatory parameter Workbook is the workbook COM Object passed to the function.
 
     .PARAMETER Sheetname
-        The parameter Sheetname is a string passed to the function to name the newly created worksheet.
+        The optional parameter Sheetname is a string passed to the function to name the newly created worksheet.
 
     .EXAMPLE
         The example below creates a new worksheet named Data.
+
+        Add-Worksheet -ObjExcel <PS Excel COM Object> -Workbook <PS Excel COM Workbook Object> [-SheetName <String>]
+
         PS C:\> Add-Worksheet -ObjExcel $myObjExcel -Workbook $wb -Sheetname "Data"
 
     .NOTES
@@ -300,6 +321,9 @@ function Add-Workbook {
 
     .EXAMPLE
         The example below returns the newly created Excel workbook COM Object.
+
+        Add-Workbook -ObjExcel <PS Excel COM Object>
+
         PS C:\> Add-Workbook -ObjExcel $myExcelObj
 
     .NOTES
@@ -342,6 +366,9 @@ function Save-Workbook {
 
     .EXAMPLE
         The example below Saves the workbook as C:\Excel.xlsx.
+
+        Save-Workbook -Workbook <PS Excel COM Workbook Object> -Path <String>
+
         PS C:\> Save-Workbook -Workbook $wb -Path "C:\Excel.xlsx"
 
     .NOTES
@@ -401,11 +428,14 @@ function Get-WorksheetUsedRange {
         This advanced function returns a hashtable containing the last used column and last used row of a worksheet.
 
     .PARAMETER Worksheet
-        The parameter Worksheet is the Excel worksheet com object passed to the function.
+        The mandatory parameter Worksheet is the Excel worksheet com object passed to the function.
 
     .EXAMPLE
         The example below returns a hashtable containing the last used column and row of the referenced worksheet.
-        PS C:\> Get-WorksheetUsedRange $Worksheet
+
+        Get-WorksheetUsedRange -Worksheet <PS Excel Worksheet Object>
+
+        PS C:\> Get-WorksheetUsedRange -Worksheet $myWorksheet
 
     .NOTES
         There are several ways to get the used range in an Excel Worksheet. However, most of them will return areas
@@ -467,7 +497,6 @@ function Get-WorksheetUsedRange {
         }
 }
 
-
 function Get-WorksheetData {
     <#
     .SYNOPSIS
@@ -481,7 +510,7 @@ function Get-WorksheetData {
         The parameter Worksheet is the Excel worksheet com object passed to the function.
 
     .PARAMETER HashtableReturn
-        The switch parameter HashtableReturn with default value False, causes the function to return an array of
+        The optional switch parameter HashtableReturn with default value False, causes the function to return an array of
     hashtables instead of an array of objects.
 
     .PARAMETER TrimHeaders
@@ -489,8 +518,11 @@ function Get-WorksheetData {
 
     .EXAMPLE
         The example below returns an array of custom objects using the first row as object parameter names and each
-	additional row as object data.
-        PS C:\> Get-WorksheetData $Worksheet
+    additional row as object data.
+
+        Get-WorksheetData -Worksheet <PS Excel Worksheet COM Object> [-HashtableReturn] [-TrimHeaders]
+
+        PS C:\> Get-WorksheetData -Worksheet $myWorksheet
 
     .NOTES
         Author: Michael van Blijdesteijn
@@ -518,15 +550,15 @@ function Get-WorksheetData {
 
             # Addressing in $worksheet.cells.item(Row,Column)
             # Get the Address of the last column on the worksheet.
-            $lastColumnAddress		= $workSheet.Cells.Item(1,$usedRange.Column).address()
+            $lastColumnAddress = $workSheet.Cells.Item(1,$usedRange.Column).address()
             # Get the Address of the last row on the worksheet.
-            $lastColumnRowAddress	= $workSheet.Cells.Item($usedRange.Row,$usedRange.Column).address()
+            $lastColumnRowAddress = $workSheet.Cells.Item($usedRange.Row,$usedRange.Column).address()
             # Get the values of the first row to use as object Properties.
-            $headers	= $workSheet.Range("A1",$lastColumnAddress).Value()
+            $headers = $workSheet.Range("A1",$lastColumnAddress).Value()
             # If $TrimHeaders is true, remove whitespce from the headers.
             # https://stackoverflow.com/questions/24355760/removing-spaces-from-a-variable-input-using-powershell-4-0
             # To remove all spaces at the beginning and end of the line, and replace all double-and-more-spaces or tab symbols to spacebar symbol.
-            If ($TrimHeaders) {
+            if ($TrimHeaders) {
                 $headers = $headers -replace '(^\s+|\s+$)','' -replace '\s+',''
             }
             # Get the values of the remaining rows to use as object values.
@@ -544,7 +576,7 @@ function Get-WorksheetData {
                         # If there is more than one column.
                         if ($UsedRange.Column -ne 1) {
                             # Then add a key value to the current hashtable. Where the key (i.e. header) is in row 1 and column $j and the value (i.e. data) is in row $i and column $j.
-                            $hashtable[$headers[1,$j]] = $data[$i,$j]
+                            $hashtable[$headers[$j - 1]] = $data[$i,$j]
                         }
                         # If is only one column and there are more than two rows.
                         elseif ($UsedRange.Row -gt 2) {
@@ -581,24 +613,23 @@ function Set-WorksheetData {
         This advanced function populates a Microsoft Excel Worksheet with data from an Array of custom objects or hashtables.
 
     .DESCRIPTION
-        This advanced function populates a Microsoft Excel Worksheet with data from an Array of custom objects. The object 
-	members populates the first row of the sheet as header items. The object values are placed beneath the headers on 
+        This advanced function populates a Microsoft Excel Worksheet with data from an Array of custom objects. The object
+	members populates the first row of the sheet as header items. The object values are placed beneath the headers on
 	each successive row.
 
     .PARAMETER Worksheet
-        The parameter Worksheet is the Excel worksheet com object passed to the function.
+        The mandatory parameter Worksheet is the Excel worksheet com object passed to the function.
 
     .PARAMETER InputArray
-        The parameter InputArray is an Array of custom objects.
-
-    .PARAMETER HashtableReturn
-        The switch parameter HashtableReturn with default value False, causes the function to return an array of hashtables 
-	instead of an array of objects.
+        The mandatory parameter InputArray is an Array of custom objects.
 
     .EXAMPLE
-        The example below returns an array of custom objects using the first row as object parameter names and each additional 
-	row as object data.
-        PS C:\> Set-WorksheetData $Worksheet
+        The example below returns an array of custom objects using the first row as object parameter names and each additional
+    row as object data.
+
+        Set-WorksheetData -Worksheet <PS Excel Worksheet COM Object> -InputArray <PS Object Array>
+
+        PS C:\> Set-WorksheetData -Worksheet $Worksheet -ImputArray $myObjectArray
 
     .NOTES
         Author: Michael van Blijdesteijn
@@ -669,11 +700,14 @@ function Set-WorksheetName {
         This advanced function sets the name of the given worksheet.
 
     .PARAMETER Worksheet
-        The parameter Worksheet is the Excel worksheet com object passed to the function.
+        The mandatory parameter Worksheet is the Excel worksheet com object passed to the function.
 
     .EXAMPLE
         The example below renames the worksheet to Data unless that name is already in use.
-        PS C:\> Set-WorksheetName -Worksheet $ws -SheetName "Data"
+
+        Set-WorksheetName -Worksheet <PS Excel Worksheet COM Object> -SheetName <String>
+
+        PS C:\> Set-WorksheetName -Worksheet $myWorksheet -SheetName "Data"
 
     .NOTES
         Author: Michael van Blijdesteijn
@@ -709,11 +743,14 @@ function Get-WorksheetNames {
         This advanced function returns an array of strings of all worksheets in a workbook.
 
     .PARAMETER Workbook
-        The parameter Workbook is the Excel workbook com object passed to the function.
+        The mandatory parameter Workbook is the Excel workbook com object passed to the function.
 
     .EXAMPLE
         The example below renames the worksheet to Data unless that name is already in use.
-        PS C:\> Get-WorksheetNames -Workbook $wb
+
+        Get-WorksheetNames -Workbook <PS Excel Workbook COM Object>
+
+        PS C:\> Get-WorksheetNames -Workbook $myWorkbook
 
     .NOTES
         Author: Michael van Blijdesteijn
@@ -750,11 +787,14 @@ function ConvertPSObjectToHashtable {
         This advanced function returns a hashtable converted from a PSObject and will return work with nested PSObjects.
 
     .PARAMETER InputObject
-        The parameter InputObject is a PSObject.
+        The mandatory parameter InputObject is a PSObject.
 
     .EXAMPLE
         The example below returns a hashtable created from the myPSObject PSObject.
-        PS C:\> $myNewHash = ConvertPSObjectToHashtable $myPSObject
+
+        ConvertPSObjectToHashtable -InputObject <PSObject>
+
+        PS C:\> $myNewHash = ConvertPSObjectToHashtable -InputObject $myPSObject
 
     .NOTES
         Author: Dave Wyatt - https://stackoverflow.com/questions/3740128/pscustomobject-to-hashtable
@@ -812,13 +852,16 @@ function Export-Yaml {
         This advanced function exports a hashtable or PSObject to a Yaml file
 
     .PARAMETER InputObject
-        The parameter InputObject is a hashtable or PSObject.
+        The mandatory parameter InputObject is a hashtable or PSObject.
 
     .PARAMETER Path
         The mandatory parameter Path is the location string of the Yaml file.
 
     .EXAMPLE
         The example below returns a hashtable created from the myPSObject PSObject.
+
+        Export-Yaml -InputObject <PSObject> -Path <String>
+
         PS C:\> Export-Yaml -InputObject $myHastable -FilePath "C:\myYamlFile.yml"
 
         or
@@ -869,13 +912,16 @@ function Export-Json {
         This advanced function exports a hashtable or PSObject to a Json file
 
     .PARAMETER InputObject
-        The parameter InputObject is a hashtable or PSObject.
+        The mandatory parameter InputObject is a hashtable or PSObject.
 
     .PARAMETER Path
         The mandatory parameter Path is the location string of the Json file.
 
     .EXAMPLE
         The example below returns a hashtable created from the myPSObject PSObject.
+
+        Export-Json -InputObject <PSObject> -Path <String>
+
         PS C:\> Export-Json -InputObject $myHastable -FilePath "C:\myJsonFile.json"
 
         or
@@ -899,7 +945,6 @@ function Export-Json {
         if (-not [System.IO.Path]::IsPathRooted($Path)) {
             # Resolve absolute path from relative path.
             $Path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
-            $Workbook.Activate()
         }
     }
     process {
@@ -922,7 +967,10 @@ function Import-Json {
 
     .EXAMPLE
         The example below returns a pscustomobject created from the contents of C:\myJasonFile.json.
-        PS C:\> Export-Json -FilePath "C:\myJsonFile.json"
+
+        Import-Json -Path <String>
+
+        PS C:\> Import-Json -Path "C:\myJsonFile.json"
 
     .NOTES
         Author: Michael van Blijdesteijn
@@ -934,7 +982,12 @@ function Import-Json {
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true)]
             [String]$Path)
-    begin {}
+    begin {
+        if (-not [System.IO.Path]::IsPathRooted($Path)) {
+            # Resolve absolute path from relative path.
+            $Path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+        }
+    }
     process {
         # Load the raw content from the Path provided file and convert it from Json.
         $InputObject = Get-Content -Raw -Path $Path | ConvertFrom-Json
@@ -958,7 +1011,10 @@ function Import-Yaml {
 
     .EXAMPLE
         The example below returns a pscustomobject created from the contents of C:\myYamlFile.yml.
-        PS C:\> Export-Json -FilePath "C:\myYamlFile.yml"
+
+        Import-Yaml -Path <String>
+
+        PS C:\> Import-Yaml -Path "C:\myYamlFile.yml"
 
     .NOTES
         Author: Michael van Blijdesteijn
@@ -971,6 +1027,10 @@ function Import-Yaml {
             ValueFromPipelineByPropertyName = $true)]
             [String]$Path)
     begin {
+        if (-not [System.IO.Path]::IsPathRooted($Path)) {
+            # Resolve absolute path from relative path.
+            $Path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+        }
         # Install powershell-yaml if not already installed.
         if (-not (Get-Module -ListAvailable -Name powershell-yaml)) {
             Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Confirm:$false -Force
@@ -1001,7 +1061,7 @@ function Import-ExcelData {
     	validate that the data started in cell A1 and is in format of regular rows and columns, which is required to load the data.
 
     .PARAMETER Path
-        The mandatory parameter Path accepts a path string to the excel file. The string can be either the absolute or relative path.
+        The optional parameter Path accepts a path string to the excel file. The string can be either the absolute or relative path.
 
     .PARAMETER Exclude
         The optional parameter Exclude accepts a comma separated list of strings of worksheets to exclude from loading.
@@ -1010,10 +1070,13 @@ function Import-ExcelData {
         The optional switch parameter HashtableReturn directs if the return array will contain hashtables or pscustom objects.
 
     .PARAMETER TrimHeaders
-    The optional switch parameter TrimHeaders, removes whitespace from the column headers when creating the object or hashtable.
+        The optional switch parameter TrimHeaders, removes whitespace from the column headers when creating the object or hashtable.
 
     .EXAMPLE
         The example below shows the command line use with Parameters.
+
+        Import-ExcelData [-Path <String>] [-Exclude <String>,<String>,...] [-HashtableReturn] [-TrimHeaders]
+
         PS C:\> Import-ExcelData -Path "C:\temp\myExcel.xlsx"
 
     	or
@@ -1046,7 +1109,7 @@ function Import-ExcelData {
         [Parameter(Mandatory = $false,
     		ValueFromPipeline = $true,
     		ValueFromPipelineByPropertyName = $true)]
-    		[Switch]$Trimheaders = $false
+    		[Switch]$TrimHeaders = $false
     )
 
     # If no path was specified, prompt for path until it has a value.
@@ -1058,11 +1121,15 @@ function Import-ExcelData {
             Return "Path not specified."
         }
     }
-
     # Check to see if the path is relative or absolute. A rooted path is absolute.
     if (-not [System.IO.Path]::IsPathRooted($Path)) {
     	# Resolve absolute path from relative path.
     	$Path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+    }
+
+    # Check to make sure the file is either a xls or xlsx file.
+    if ((Get-ChildItem -Path $Path).Extension -notmatch "xls") {
+        Return {"File is not an excel file. Please select a valid .xls or .xlsx file."}
     }
 
     # Create Microsoft Excel COM Object.
@@ -1080,11 +1147,11 @@ function Import-ExcelData {
     $ws | ForEach-Object {
     	If ($HashtableReturn) {
     		# Add each worksheet's hashtable objects to the data array.
-    		$data += Get-WorksheetData -Worksheet $(Get-Worksheet -Workbook $wb -SheetName $_) -HashtableReturn -TrimHeaders:$Trimheaders
+    		$data += Get-WorksheetData -Worksheet $(Get-Worksheet -Workbook $wb -SheetName $_) -HashtableReturn:$true -TrimHeaders:$true
     	}
     	else {
     		# Add each worksheet's pscustom objects to the data array.
-    		$data += Get-WorksheetData -Worksheet $(Get-Worksheet -Workbook $wb -SheetName $_) -TrimHeaders:$Trimheaders
+    		$data += Get-WorksheetData -Worksheet $(Get-Worksheet -Workbook $wb -SheetName $_) -TrimHeaders:$true
     	}
     }
 
@@ -1118,6 +1185,9 @@ function Read-ExcelPath {
 
     .EXAMPLE
         The example below shows the command line use with Parameters.
+
+        ReadExcelPath -Title <String>
+
         PS C:\> Read-ExcelPath -Title "Select Microsoft Excel Workbook to Import"
 
     .NOTES
@@ -1140,9 +1210,14 @@ function Read-ExcelPath {
     $openFileDialog.title = $Title
     $openFileDialog.InitialDirectory = $pwd.path
     $openFileDialog.filter = "Excel Worksheets (*.xls, *.xlsx)|*.xls;*.xlsx"
-    $openFileDialog.ShowHelp = $True
+    $openFileDialog.ShowHelp = $false
     $openFileDialog.ShowDialog() | Out-Null
-    Return $openFileDialog.FileName
+    if ($openFileDialog.FileName -eq "") {
+        Return $null
+    }
+    else {
+        Return $openFileDialog.FileName
+    }
 }
 
 # Export the functions above.
