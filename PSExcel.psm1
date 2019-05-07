@@ -558,7 +558,7 @@ function Get-WorksheetData {
             # If $TrimHeaders is true, remove whitespce from the headers.
             # https://stackoverflow.com/questions/24355760/removing-spaces-from-a-variable-input-using-powershell-4-0
             # To remove all spaces at the beginning and end of the line, and replace all double-and-more-spaces or tab symbols to spacebar symbol.
-            if ($TrimHeaders) {
+            if ($TrimHeaders.IsPresent) {
                 $headers = $headers -replace '(^\s+|\s+$)','' -replace '\s+',''
             }
             # Get the values of the remaining rows to use as object values.
@@ -576,7 +576,7 @@ function Get-WorksheetData {
                         # If there is more than one column.
                         if ($UsedRange.Column -ne 1) {
                             # Then add a key value to the current hashtable. Where the key (i.e. header) is in row 1 and column $j and the value (i.e. data) is in row $i and column $j.
-                            $hashtable[$headers[$j - 1]] = $data[$i,$j]
+                            $hashtable[$headers[$j-1]] = $data[$i,$j]
                         }
                         # If is only one column and there are more than two rows.
                         elseif ($UsedRange.Row -gt 2) {
@@ -652,39 +652,27 @@ function Set-WorksheetData {
             if ($InputArray[0] -is "Hashtable") {
                 $InputArray = $InputArray | ForEach-Object {[pscustomobject]$_}
             }
-            # Define a stack object.
-            $myStack = new-object system.collections.stack
-            # Get the object Properties to use as the column headers.
-            $headers = $InputArray[0].PSObject.Properties.Name
-            # Get the object Values to use as data rows.
-	        $values  = $InputArray | ForEach-Object {$_.psobject.properties.value}
         }
         Process {
-            # If there are more than one column push the values into the stack and then the headers.
-	        if ($headers.count -gt 1) {
-	        	$values[($values.length - 1)..0] | ForEach-Object {$myStack.Push($_)}
-	        	$headers[($headers.length - 1)..0] | ForEach-Object {$myStack.Push($_)}
-	        }
-	        Else {
-                # Otherwise, just push the values and the header in the stack.
-	        	$values	 | ForEach-Object {$myStack.Push($_)}
-	        	$headers | ForEach-Object {$myStack.Push($_)}
-            }
+            $properties = $InputArray[0].PSObject.Properties
             # Number of columns is equal to the header count.
-            $columns = $headers.Count
+            $columns = $properties.Name.Count
             # Number of rows is equal to the number of values devided by the number of headers.
-            $rows = $values.Count/$headers.Count + 1
+            $rows = $InputArray.Count
             # Create a multidimenstional array sized number of rows by number of columns.
-            $array = New-Object 'object[,]' $rows, $columns
-            # Fill the array from the stack.
-	        For ($i=0;$i -lt $rows;$i++)
-	        	{
-	        		For ($j = 0; $j -lt $columns; $j++) {
-	        			$array[$i,$j] = $myStack.Pop()
-	        		}
+            $array = New-Object 'object[,]' $($rows + 1), $columns
+
+            for ($i=0; $i -lt $rows; $i++) {
+                $row = $i + 1
+                for ($j=0; $j -lt $columns; $j++) {
+                    if ($i -eq 0) {
+                        $array[$i,$j] = $properties.Name[$j];
+                    }
+                    $array[$row,$j] = $InputArray[$i].$($properties.Name[$j])
                 }
+            }
             # Define the Excel worksheet range.
-            $range = $Worksheet.Range($Worksheet.Cells(1,1), $Worksheet.Cells($rows,$columns))
+            $range = $Worksheet.ActiveSheet.Range($Worksheet.ActiveSheet.Cells(1,1), $Worksheet.ActiveSheet.Cells($($rows + 1),$columns))
             # Populate the worksheet using the Worksheet.Range function.
             $range.Value2 = $array
         }
@@ -1147,11 +1135,11 @@ function Import-ExcelData {
     $ws | ForEach-Object {
     	If ($HashtableReturn) {
     		# Add each worksheet's hashtable objects to the data array.
-    		$data += Get-WorksheetData -Worksheet $(Get-Worksheet -Workbook $wb -SheetName $_) -HashtableReturn:$true -TrimHeaders:$true
+    		$data += Get-WorksheetData -Worksheet $(Get-Worksheet -Workbook $wb -SheetName $_) -HashtableReturn:$true -TrimHeaders:$TrimHeaders.IsPresent
     	}
     	else {
     		# Add each worksheet's pscustom objects to the data array.
-    		$data += Get-WorksheetData -Worksheet $(Get-Worksheet -Workbook $wb -SheetName $_) -TrimHeaders:$true
+    		$data += Get-WorksheetData -Worksheet $(Get-Worksheet -Workbook $wb -SheetName $_) -TrimHeaders:$TrimHeaders.IsPresent
     	}
     }
 
@@ -1205,13 +1193,19 @@ function Read-ExcelPath {
             [String]$Title
     )
     # https://docs.microsoft.com/en-us/previous-versions/windows/silverlight/dotnet-windows-silverlight/cc189944(v%3dvs.95)
+
     Add-Type -AssemblyName System.Windows.Forms
+    $topform = New-Object System.Windows.Forms.Form
+	$topform.Topmost = $true
+    $topform.MinimizeBox = $true
+
     $openFileDialog = New-Object windows.forms.openfiledialog
     $openFileDialog.title = $Title
     $openFileDialog.InitialDirectory = $pwd.path
     $openFileDialog.filter = "Excel Worksheets (*.xls, *.xlsx)|*.xls;*.xlsx"
     $openFileDialog.ShowHelp = $false
-    $openFileDialog.ShowDialog() | Out-Null
+    $openFileDialog.ShowDialog($topform) | Out-Null
+
     if ($openFileDialog.FileName -eq "") {
         Return $null
     }
