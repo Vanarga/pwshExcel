@@ -553,8 +553,8 @@ function Get-WorksheetData {
             $lastColumnAddress = $workSheet.Cells.Item(1,$usedRange.Column).address()
             # Get the Address of the last row on the worksheet.
             $lastColumnRowAddress = $workSheet.Cells.Item($usedRange.Row,$usedRange.Column).address()
-            # Get the values of the first row to use as object Properties.
-            $headers = $workSheet.Range("A1",$lastColumnAddress).Value()
+            # Get the values of the first row to use as object Properties. Replace "" with "" to convert to a one dimensional array.
+            $headers = $workSheet.Range("A1",$lastColumnAddress).Value() -replace "",""
             # If $TrimHeaders is true, remove whitespce from the headers.
             # https://stackoverflow.com/questions/24355760/removing-spaces-from-a-variable-input-using-powershell-4-0
             # To remove all spaces at the beginning and end of the line, and replace all double-and-more-spaces or tab symbols to spacebar symbol.
@@ -576,7 +576,7 @@ function Get-WorksheetData {
                         # If there is more than one column.
                         if ($UsedRange.Column -ne 1) {
                             # Then add a key value to the current hashtable. Where the key (i.e. header) is in row 1 and column $j and the value (i.e. data) is in row $i and column $j.
-                            $hashtable[$headers[$j-1]] = $data[$i,$j]
+                            $hashtable[$headers[$j - 1]] = $data[$i,$j]
                         }
                         # If is only one column and there are more than two rows.
                         elseif ($UsedRange.Row -gt 2) {
