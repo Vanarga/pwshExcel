@@ -166,7 +166,7 @@ function Get-Workbook {
         Begin {
             # If no path was specified, prompt for path until it has a value.
             if (-not $Path) {
-                $Path = Read-ExcelPath -Title "Select the Excel WorkBook you wish to open."
+                $Path = Read-FilePath -Title "Select Microsoft Excel Workbook to Import" -Extension xls,xlsx
                 if (-not $Path) {Return "Error, Workbook not specified."}
             }
             # Check to make sure the file is either a xls or xlsx file.
@@ -576,7 +576,7 @@ function Get-WorksheetData {
                         # If there is more than one column.
                         if ($UsedRange.Column -ne 1) {
                             # Then add a key value to the current hashtable. Where the key (i.e. header) is in row 1 and column $j and the value (i.e. data) is in row $i and column $j.
-                            $hashtable[$headers[$j - 1]] = $data[$i,$j]
+                            $hashtable[$headers[$j-1]] = $data[$i,$j]
                         }
                         # If is only one column and there are more than two rows.
                         elseif ($UsedRange.Row -gt 2) {
@@ -1103,7 +1103,7 @@ function Import-ExcelData {
     # If no path was specified, prompt for path until it has a value.
     if (-not $Path) {
         Try {
-            $Path = Read-ExcelPath -Title "Select Microsoft Excel Workbook to Import" -ErrorAction Stop
+            $Path = Read-FilePath -Title "Select Microsoft Excel Workbook to Import" -Extension xls,xlsx -ErrorAction Stop
         }
         Catch {
             Return "Path not specified."
@@ -1160,7 +1160,7 @@ function Import-ExcelData {
 
 }
 
-function Read-ExcelPath {
+function Read-FilePath {
     <#
     .SYNOPSIS
     	This function opens a gui window dialog to navigate to an excel file.
@@ -1171,18 +1171,21 @@ function Read-ExcelPath {
     .PARAMETER Title
         The mandatory parameter Title, is a string that appears on the navigation window.
 
+    .PARAMETER Extension
+        The optional parameter Extension, is a string array that filters the file extensions to allow selection of.
+
     .EXAMPLE
         The example below shows the command line use with Parameters.
 
-        ReadExcelPath -Title <String>
+        Read-FilePath -Title <String> -Extension <String[]>
 
-        PS C:\> Read-ExcelPath -Title "Select Microsoft Excel Workbook to Import"
+        PS C:\> Read-FilePath -Title "Select a file to upload" -Extension exe,msi,intunewin
 
     .NOTES
 
         Author: Michael van Blijdesteijn
-        Last Edit: 2019-03-19
-        Version 1.0 - Read-ExcelPath
+        Last Edit: 2019-08-06
+        Version 1.0 - Read-FilePath
     #>
 
     [cmdletbinding()]
@@ -1190,7 +1193,11 @@ function Read-ExcelPath {
         [Parameter(Mandatory = $true,
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true)]
-            [String]$Title
+            [String]$Title,
+        [Parameter(Mandatory = $false,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true)]
+            [String[]]$Extension
     )
     # https://docs.microsoft.com/en-us/previous-versions/windows/silverlight/dotnet-windows-silverlight/cc189944(v%3dvs.95)
 
@@ -1202,7 +1209,9 @@ function Read-ExcelPath {
     $openFileDialog = New-Object windows.forms.openfiledialog
     $openFileDialog.title = $Title
     $openFileDialog.InitialDirectory = $pwd.path
-    $openFileDialog.filter = "Excel Worksheets (*.xls, *.xlsx)|*.xls;*.xlsx"
+    if ($Extension) {
+        $openFileDialog.filter = "File types ($(($Extension -join "; *.").Insert(0,"*.")))|$(($Extension -join ";*.").Insert(0,"*."))"
+    }
     $openFileDialog.ShowHelp = $false
     $openFileDialog.ShowDialog($topform) | Out-Null
 
