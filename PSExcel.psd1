@@ -12,7 +12,7 @@
 RootModule = 'PSExcel'
 
 # Version number of this module.
-ModuleVersion = '1.0'
+ModuleVersion = '1.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -73,7 +73,7 @@ FunctionsToExport = 'Open-Excel', 'Close-Excel', 'Get-Workbook', 'Get-Worksheet'
                     'Add-Worksheet', 'Add-Workbook', 'Save-Workbook', 'Get-WorksheetUsedRange', 
                     'Get-WorksheetData', 'Set-WorksheetData', 'Set-WorksheetName', 'Get-WorksheetNames', 
                     'ConvertPSObjectToHashtable', 'Export-Yaml', 'Export-Json', 'Import-Json', 
-                    'Import-Yaml', 'Import-ExcelData','Read-ExcelPath'
+                    'Import-Yaml', 'Import-ExcelData','Read-FilePath'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = '*'
@@ -124,4 +124,3 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
-
