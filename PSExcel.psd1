@@ -12,7 +12,7 @@
 RootModule = 'PSExcel'
 
 # Version number of this module.
-ModuleVersion = '1.1'
+ModuleVersion = '1.01'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
