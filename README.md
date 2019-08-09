@@ -26,7 +26,7 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
 16. Import-Jason
 17. Import-Yaml
 18. Import-ExcelData
-19. Read-ExcelPath
+19. Read-FilePath
 
 ## Function Help ##
 1. **Open-Excel** - Creates a new excel COM object.  
@@ -370,10 +370,10 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
 
 ```
 
-18. **Read-ExcelPath**  
+19. **Read-FilePath**  
 
     **.DESCRIPTION**  
-        This function opens a gui window dialog to navigate to an excel file and returns the path.
+        This function opens a gui window dialog to navigate to a file and returns the path.
 
     **.PARAMETER** - Title  
         The mandatory parameter Title, is a string that appears on the navigation window.
@@ -381,9 +381,9 @@ Copy files **PSExcel.psd1** and **PSExcel.psm1** to C:\Windows\System32\WindowsP
     **.EXAMPLE**  
         The example below shows the command line use with Parameters.
 ```
-        ReadExcelPath -Title <String>
+        Read-FilePath -Title <String> -Extension <String[]>
 
-        PS C:\> Read-ExcelPath -Title "Select Microsoft Excel Workbook to Import"
+        PS C:\> Read-FilePath -Title "Select Microsoft Excel Workbook to Import" -Extension xls,xlsx
 ```
 
 ## Working Example ##  
