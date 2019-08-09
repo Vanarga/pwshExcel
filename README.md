@@ -4,8 +4,8 @@
 This repo contains the PowerShell module for manipulating Microsoft Excel Workbooks, Worksheets, etc. The main purpose of the module is to allow data retrieval from Excel for use in automation scripts and configuration scripts.
 
 ## Installation ##  
-Create a folder called pwsh-excel in **C:\Program Files\WindowsPowerShell\Modules\**  
-Copy files **pwsh-excel.psd1** and **pwsh-excel.psm1** to C:\Program Files\WindowsPowerShell\Modules\pwsh-excel  
+Create a folder called pwshExcel in **C:\Program Files\WindowsPowerShell\Modules\**  
+Copy files **pwshExcel.psd1** and **pwshExcel.psm1** to C:\Program Files\WindowsPowerShell\Modules\pwshExcel  
 
 ## Functions ##
 1. Open-Excel
