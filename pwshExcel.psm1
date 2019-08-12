@@ -766,7 +766,7 @@ function Get-WorksheetNames {
         }
 }
 
-function ConvertPSObjectToHashtable {
+function ConvertTo-Hashtable {
     <#
     .SYNOPSIS
         This advanced function returns a hashtable converted from a PSObject.
@@ -780,9 +780,9 @@ function ConvertPSObjectToHashtable {
     .EXAMPLE
         The example below returns a hashtable created from the myPSObject PSObject.
 
-        ConvertPSObjectToHashtable -InputObject <PSObject>
+        ConvertTo-Hashtable -InputObject <PSObject>
 
-        PS C:\> $myNewHash = ConvertPSObjectToHashtable -InputObject $myPSObject
+        PS C:\> $myNewHash = ConvertTo-Hashtable -InputObject $myPSObject
 
     .NOTES
         Author: Dave Wyatt - https://stackoverflow.com/questions/3740128/pscustomobject-to-hashtable
@@ -802,7 +802,7 @@ function ConvertPSObjectToHashtable {
         {
             # Call this function recursively for each object in InputObjects.
             $collection = @(
-                foreach ($object in $InputObject) { ConvertPSObjectToHashtable $object }
+                foreach ($object in $InputObject) { ConvertTo-Hashtable $object }
             )
 
             Write-Output -NoEnumerate $collection
@@ -816,8 +816,8 @@ function ConvertPSObjectToHashtable {
             # Iterate through all the properties in the PSObject.
             foreach ($property in $InputObject.PSObject.Properties)
             {
-                # Add a key value pair to the hashtable and call the ConvertPSObjectToHashtable function on the property value.
-                $hash[$property.Name] = ConvertPSObjectToHashtable $property.Value
+                # Add a key value pair to the hashtable and call the ConvertTo-Hashtable function on the property value.
+                $hash[$property.Name] = ConvertTo-Hashtable $property.Value
             }
 
             # Return the hashtable.
@@ -1226,6 +1226,7 @@ function Read-FilePath {
 # Export the functions above.
 Export-ModuleMember -Function 'Add-*'
 Export-ModuleMember -Function 'Close-*'
+Export-ModuleMember -Function 'ConvertTo-*'
 Export-ModuleMember -Function 'Export-*'
 Export-ModuleMember -Function 'Get-*'
 Export-ModuleMember -Function 'Import-*'
