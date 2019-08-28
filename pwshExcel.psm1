@@ -672,7 +672,7 @@ function Set-WorksheetData {
                 }
             }
             # Define the Excel worksheet range.
-            $range = $Worksheet.ActiveSheet.Range($Worksheet.ActiveSheet.Cells(1,1), $Worksheet.ActiveSheet.Cells($($rows + 1),$columns))
+            $range = $Worksheet.Range($Worksheet.Cells(1,1), $Worksheet.Cells($($rows + 1),$columns))
             # Populate the worksheet using the Worksheet.Range function.
             $range.Value2 = $array
         }
