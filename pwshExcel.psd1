@@ -12,7 +12,7 @@
 RootModule = 'pwshExcel'
 
 # Version number of this module.
-ModuleVersion = '1.0.1'
+ModuleVersion = '1.0.2'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -69,11 +69,7 @@ PowerShellVersion = '3.0'
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = 'Open-Excel', 'Close-Excel', 'Get-Workbook', 'Get-Worksheet', 
-                    'Add-Worksheet', 'Add-Workbook', 'Save-Workbook', 'Get-WorksheetUsedRange', 
-                    'Get-WorksheetData', 'Set-WorksheetData', 'Set-WorksheetName', 'Get-WorksheetNames', 
-                    'ConvertTo-Hashtable', 'Export-Yaml', 'Export-Json', 'Import-Json', 
-                    'Import-Yaml', 'Import-ExcelData','Read-FilePath'
+FunctionsToExport = '*'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = '*'
