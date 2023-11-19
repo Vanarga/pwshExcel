@@ -1,13 +1,13 @@
-# Readme #
-## Project: PowerShell Excel Module ##
+# Readme
+## Project: PowerShell Excel Module
 
 This repo contains the PowerShell module for manipulating Microsoft Excel Workbooks, Worksheets, etc. The main purpose of the module is to allow data retrieval from Excel for use in automation scripts and configuration scripts.
 
-## Installation ##  
+## Installation
 Create a folder called pwshExcel in **C:\Program Files\WindowsPowerShell\Modules\**  
 Copy files **pwshExcel.psd1** and **pwshExcel.psm1** to C:\Program Files\WindowsPowerShell\Modules\pwshExcel  
 
-## Functions ##
+## Functions
 1. Open-Excel
 2. Close-Excel
 3. Get-Workbook
@@ -28,7 +28,7 @@ Copy files **pwshExcel.psd1** and **pwshExcel.psm1** to C:\Program Files\Windows
 18. Import-ExcelData
 19. Read-FilePath
 
-## Function Help ##
+## Function Help
 1. **Open-Excel** - Creates a new excel COM object.  
 
 **.DESCRIPTION**  
@@ -386,25 +386,25 @@ Copy files **pwshExcel.psd1** and **pwshExcel.psm1** to C:\Program Files\Windows
         PS C:\> Read-FilePath -Title "Select Microsoft Excel Workbook to Import" -Extension xls,xlsx
 ```
 
-## Working Example ##  
+## Working Example
 
 Here is an Excel workbook with two worksheets (Virtual Machines and Virtual Networks). The code below will parse all the worksheets. It creates one object per row starting with row two. Where the property names are taken from row one of the column the data is in. The objects are addeded to the object array and returned.
 
 **Sheet Name**: **Virtual Machines**  
 
-1 Hostname  |  Instance Size  |  Internal IP
---------  |  -------------  |  -----------
-2 VM01  |  Standard_D4  |  10.10.1.10  
-3 VM02  |  Standard_D4  |  10.10.1.11  
-4 VM03  |  Standard_D4  |  10.10.1.12  
-5 VM04  |  Standard_D4  |  10.10.1.13  
+| No.  |Hostname  |  Instance Size  |  Internal IP|
+|---|--------|-------------|-----------|
+| 1 | VM01  |  Standard_D4  |  10.10.1.10  |
+| 2 | VM02  |  Standard_D4  |  10.10.1.11  |
+| 3 | VM03  |  Standard_D4  |  10.10.1.12  |
+| 4 | VM04  |  Standard_D4  |  10.10.1.13  |
 
 **Sheet Name**: **Virtual Networks**  
 
-1 Name  |  Resource Group  |  Location  |  Vnet Address Prefix  |  Deploy  
-----  |  --------------  |  --------  |  -------------------  |  ------  
-2 VNET01  |  RG-VNT-01  |  eastus  |  10.10.1.0/20  |  TRUE  
-3 VNET01  |  RG-VNT-01  |  northcentralus  |  10.11.1.0/20  |  TRUE  
+|No.| Name  |  Resource Group  |  Location  |  Vnet Address Prefix  |  Deploy  |
+|---| ----|--------------|--------|-------------------|------|
+| 1 | VNET01  |  RG-VNT-01  |  eastus  |  10.10.1.0/20  |  TRUE  |
+| 2 | VNET01  |  RG-VNT-01  |  northcentralus  |  10.11.1.0/20  |  TRUE  |
 
 So for the Worksheet Virtual Machines, the script will create four objects with properties Hostname, Instance Size and Internal IP. The data for each object is taken from each consecutive row starting with row two.  
 
